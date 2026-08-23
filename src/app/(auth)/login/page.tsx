@@ -155,33 +155,6 @@ function LoginForm() {
             </div>
           </form>
 
-          {/* Quick Mock Login Helper */}
-          <div className="mt-6 border-t border-primary/5 pt-5 text-center">
-            <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">
-              Quick Test Credentials
-            </span>
-            <div className="flex justify-center gap-2 mt-2">
-              <button
-                onClick={() => {
-                  setEmail("customer@whisk.com");
-                  setPassword("customer123");
-                }}
-                className="rounded-full bg-secondary/80 hover:bg-secondary px-3 py-1.5 text-[10px] font-bold text-primary transition-all cursor-pointer"
-              >
-                Customer Account
-              </button>
-              <button
-                onClick={() => {
-                  setEmail("admin@whisk.com");
-                  setPassword("admin123");
-                }}
-                className="rounded-full bg-secondary/80 hover:bg-secondary px-3 py-1.5 text-[10px] font-bold text-primary transition-all cursor-pointer"
-              >
-                Admin Account
-              </button>
-            </div>
-          </div>
-
           <div className="mt-6 text-center text-xs text-primary/60">
             Don&rsquo;t have a Whisk account?{" "}
             <Link href="/signup" className="font-bold text-accent hover:underline">

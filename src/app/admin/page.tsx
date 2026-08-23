@@ -610,7 +610,7 @@ export default function AdminDashboard() {
                 required
                 value={adminEmail}
                 onChange={(e) => setAdminEmail(e.target.value)}
-                placeholder="admin@whisk.com"
+                placeholder="whiskfantasies17@gmail.com"
                 className="w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-white focus:outline-none focus:border-accent"
               />
             </div>
@@ -1400,7 +1400,7 @@ export default function AdminDashboard() {
                       acc.push({ name: order.userName, email: order.userEmail, phone: order.billingInfo.phone, address: order.billingInfo.address });
                     }
                     return acc;
-                  }, [{ name: "Evelyn Vance", email: "customer@whisk.com", phone: "+91 8424016876", address: "Karm Stambh, LBS Marg, Vikhroli, Mumbai" }]).map((cust, idx) => (
+                  }, []).map((cust: any, idx: number) => (
                     <tr key={idx} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
                       <td className="py-4 font-semibold text-primary">{cust.name}</td>
                       <td className="py-4 text-primary/60">{cust.email}</td>

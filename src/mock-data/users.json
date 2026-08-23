@@ -1,20 +1,11 @@
 [
   {
-    "id": "user-customer",
-    "email": "customer@whisk.com",
-    "password": "customer123",
-    "name": "Evelyn Vance",
-    "role": "customer",
-    "address": "124 Baker St, New York, NY 10001",
-    "phone": "+1 (555) 987-6543"
-  },
-  {
-    "id": "user-admin",
-    "email": "admin@whisk.com",
-    "password": "admin123",
-    "name": "Chef Christian",
+    "id": "user-admin-master",
+    "email": "whiskfantasies17@gmail.com",
+    "password": "Whisk@Password@2026",
+    "name": "Whisk Master Admin",
     "role": "admin",
-    "address": "742 Patisserie Avenue, New York, NY 10021",
-    "phone": "+1 (212) 555-2253"
+    "address": "Karm Stambh, LBS Marg, Vikhroli, Mumbai",
+    "phone": "+91 8424016876"
   }
 ]

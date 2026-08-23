@@ -3,7 +3,7 @@
     "id": "order-1787478049176",
     "userId": "user-customer",
     "userName": "Evelyn Vance",
-    "userEmail": "customer@whisk.com",
+    "userEmail": "customer@example.com",
     "date": "2026-08-23T09:40:49.176Z",
     "cartItems": [
       {
@@ -52,7 +52,7 @@
     "id": "order-1784968803014",
     "userId": "user-admin",
     "userName": "Chef Christian",
-    "userEmail": "admin@whisk.com",
+    "userEmail": "whiskfantasies17@gmail.com",
     "date": "2026-07-25T08:40:03.014Z",
     "cartItems": [
       {
@@ -97,7 +97,7 @@
     "id": "order-1784407666705",
     "userId": "user-admin",
     "userName": "Chef Christian",
-    "userEmail": "admin@whisk.com",
+    "userEmail": "whiskfantasies17@gmail.com",
     "date": "2026-07-18T20:47:46.705Z",
     "cartItems": [
       {
