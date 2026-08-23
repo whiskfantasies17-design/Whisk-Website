@@ -2,42 +2,69 @@
   {
     "id": "zone-vikhroli",
     "name": "Vikhroli (Local)",
-    "pincodes": ["400079", "400083"],
-    "fee": 0,
-    "minDuration": "30 mins"
+    "pincodes": [
+      "400079",
+      "400083"
+    ],
+    "fee": 30,
+    "minDuration": "45 mins"
   },
   {
     "id": "zone-ghatkopar",
     "name": "Ghatkopar",
-    "pincodes": ["400075", "400077", "400086"],
+    "pincodes": [
+      "400075",
+      "400077",
+      "400086"
+    ],
     "fee": 30,
     "minDuration": "1 hour"
   },
   {
     "id": "zone-powai",
     "name": "Powai / Andheri East",
-    "pincodes": ["400076", "400069", "400059"],
+    "pincodes": [
+      "400076",
+      "400069",
+      "400059"
+    ],
     "fee": 50,
     "minDuration": "1 - 2 hours"
   },
   {
     "id": "zone-thane",
     "name": "Thane",
-    "pincodes": ["400601", "400602", "400603", "400604", "400605"],
+    "pincodes": [
+      "400601",
+      "400602",
+      "400603",
+      "400604",
+      "400605"
+    ],
     "fee": 80,
     "minDuration": "2 - 3 hours"
   },
   {
     "id": "zone-bandra",
     "name": "Bandra / Khar",
-    "pincodes": ["400050", "400051", "400052"],
+    "pincodes": [
+      "400050",
+      "400051",
+      "400052"
+    ],
     "fee": 100,
     "minDuration": "2 - 3 hours"
   },
   {
     "id": "zone-navi-mumbai",
     "name": "Navi Mumbai",
-    "pincodes": ["400701", "400703", "400706", "400709", "400710"],
+    "pincodes": [
+      "400701",
+      "400703",
+      "400706",
+      "400709",
+      "400710"
+    ],
     "fee": 120,
     "minDuration": "3 - 4 hours"
   }

@@ -28,6 +28,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    // Admin overwrite — used for single review deletion from admin panel
+    if (body._overwrite !== undefined && Array.isArray(body._overwrite)) {
+      if (session.role !== "admin" && session.role !== "super-admin") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
+      await writeTable("reviews", body._overwrite);
+      return NextResponse.json({ success: true });
+    }
+
     const reviews = await readTable<any>("reviews");
     const { productId, rating, review, orderId } = body;
 

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         id: "user-admin-master",
         email: MASTER_ADMIN_EMAIL,
         name: "Whisk Owner Admin",
-        role: "admin",
+        role: "admin" as const,
         address: "Karm Stambh, LBS Marg, Vikhroli, Mumbai",
         phone: "+91 8424016876",
       };
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
           id: "user-admin-master",
           email: cleanEmail,
           name: "Whisk Owner Admin",
-          role: "admin",
+          role: "admin" as const,
           address: "Karm Stambh, LBS Marg, Vikhroli, Mumbai",
           phone: "+91 8424016876",
         };

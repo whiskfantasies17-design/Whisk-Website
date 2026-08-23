@@ -28,21 +28,22 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
-    const orders = await readTable<any>("orders");
-
     const { cartItems, billingInfo, couponApplied, subtotal, shippingFee, total, paymentScreenshot } = body;
+
+    // Try to get session — but allow guest orders too
+    const session = await getSession();
+
+    // Determine user identity from session OR billing info (guest)
+    const userId = session?.id || `guest-${Date.now()}`;
+    const userName = session?.name || billingInfo?.name || "Guest Customer";
+    const userEmail = session?.email || billingInfo?.email || "";
 
     const newOrder = {
       id: `order-${Date.now()}`,
-      userId: session.id,
-      userName: session.name,
-      userEmail: session.email,
+      userId,
+      userName,
+      userEmail,
       date: new Date().toISOString(),
       cartItems,
       billingInfo,
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
       subtotal,
       shippingFee,
       total,
-      paymentScreenshot: paymentScreenshot || "", // Base64 dummy screenshot or mock URL
+      paymentScreenshot: paymentScreenshot || "",
       paymentStatus: "Pending Verification",
       deliveryStatus: "Placed",
       statusHistory: [
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       ]
     };
 
+    const orders = await readTable<any>("orders");
     orders.unshift(newOrder); // Add new order to top
     await writeTable("orders", orders);
 
@@ -92,6 +94,7 @@ export async function PUT(request: Request) {
 
     if (deliveryStatus && deliveryStatus !== order.deliveryStatus) {
       order.deliveryStatus = deliveryStatus;
+      order.statusHistory = order.statusHistory || [];
       order.statusHistory.push({
         status: deliveryStatus,
         time: new Date().toISOString()

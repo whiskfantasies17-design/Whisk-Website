@@ -50,11 +50,15 @@ export const Hero: React.FC = () => {
     try {
       const res = await fetch("/api/banners", { cache: "no-store" });
       const data = await res.json();
-      if (res.ok && data.banners) {
+      if (res.ok && Array.isArray(data.banners) && data.banners.length > 0) {
         setHeroSlides(data.banners);
+      } else {
+        // Fall back to built-in default slides if admin hasn't added any
+        setHeroSlides(HERO_SLIDES);
       }
     } catch (e) {
       console.error(e);
+      setHeroSlides(HERO_SLIDES);
     } finally {
       setLoaded(true);
     }
@@ -64,7 +68,12 @@ export const Hero: React.FC = () => {
     fetchBanners();
   }, []);
 
-  const activeSlides = heroSlides;
+  // Reset to slide 0 whenever the slide list changes to avoid out-of-bounds
+  const activeSlides = heroSlides.length > 0 ? heroSlides : HERO_SLIDES;
+
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [activeSlides.length]);
 
   useEffect(() => {
     if (activeSlides.length <= 1) return;
@@ -82,7 +91,9 @@ export const Hero: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
   };
 
-  if (!loaded || activeSlides.length === 0) return null;
+  if (!loaded) return (
+    <section className="relative w-full h-[70vh] sm:h-[80vh] bg-primary animate-pulse" />
+  );
 
   return (
     <section className="relative w-full h-[70vh] sm:h-[80vh] overflow-hidden bg-primary">

@@ -21,7 +21,31 @@ if (!globalThis._whiskMemoryDb) {
 }
 
 /**
- * Reads all rows from database table (Supabase, In-Memory, or local JSON fallback).
+ * Safe JSON file read — returns null if file is empty, missing, or corrupt.
+ */
+async function safeReadJson(filePath: string): Promise<any | null> {
+  try {
+    const raw = await fs.readFile(filePath, "utf-8");
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Atomic JSON write — writes to temp file then renames to prevent corrupt partial writes.
+ */
+async function safeWriteJson(filePath: string, data: any): Promise<void> {
+  const json = JSON.stringify(data, null, 2);
+  const tempPath = filePath + ".tmp";
+  await fs.writeFile(tempPath, json, "utf-8");
+  await fs.rename(tempPath, filePath);
+}
+
+/**
+ * Reads all rows from database table (Supabase → In-Memory → local JSON fallback).
  */
 export async function readTable<T>(tableName: string): Promise<T[]> {
   if (isSupabaseConfigured()) {
@@ -51,29 +75,27 @@ export async function readTable<T>(tableName: string): Promise<T[]> {
     return globalThis._whiskMemoryDb![tableName] as T[];
   }
 
-  // Local JSON fallback
-  try {
-    const filePath = path.join(MOCK_DATA_DIR, `${tableName}.json`);
-    const data = await fs.readFile(filePath, "utf-8");
-    const parsed = JSON.parse(data) as T[];
+  // Local JSON fallback (safe read)
+  const filePath = path.join(MOCK_DATA_DIR, `${tableName}.json`);
+  const parsed = await safeReadJson(filePath);
+  if (Array.isArray(parsed)) {
     globalThis._whiskMemoryDb![tableName] = parsed;
-    return parsed;
-  } catch (error) {
-    console.error(`Error reading data table: ${tableName}`, error);
-    return [];
+    return parsed as T[];
   }
+  // Return empty array as safe default
+  return [];
 }
 
 /**
- * Overwrites all rows in database table (Supabase, In-Memory & local JSON fallback).
+ * Overwrites all rows in database table (Supabase + In-Memory + local JSON fallback).
  */
 export async function writeTable<T>(tableName: string, data: T[]): Promise<boolean> {
-  // Always update memory store immediately
+  // Always update memory store immediately for instant sync
   globalThis._whiskMemoryDb![tableName] = data;
 
   if (isSupabaseConfigured()) {
     try {
-      // Clear existing records and bulk upsert
+      // Delete all, then re-insert
       await fetch(`${SUPABASE_URL}/rest/v1/${tableName}?select=*`, {
         method: "DELETE",
         headers: {
@@ -82,38 +104,42 @@ export async function writeTable<T>(tableName: string, data: T[]): Promise<boole
         },
       });
 
-      await fetch(`${SUPABASE_URL}/rest/v1/${tableName}`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY!,
-          Authorization: `Bearer ${SUPABASE_KEY!}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify(data),
-      });
+      if (data.length > 0) {
+        await fetch(`${SUPABASE_URL}/rest/v1/${tableName}`, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY!,
+            Authorization: `Bearer ${SUPABASE_KEY!}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify(data),
+        });
+      }
     } catch (err) {
       console.error(`Supabase write error for ${tableName}:`, err);
     }
   }
 
-  // Local JSON fallback
+  // Atomic write to local JSON
   try {
     const filePath = path.join(MOCK_DATA_DIR, `${tableName}.json`);
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+    await safeWriteJson(filePath, data);
     return true;
   } catch (error) {
     console.error(`Error writing table: ${tableName}`, error);
-    return true; // Still true because in-memory store succeeded!
+    // In-memory store already updated, so data is preserved this session
+    return true;
   }
 }
 
 /**
- * Reads global settings object.
+ * Reads global settings object (Supabase → In-Memory → local JSON → defaults).
  */
 export async function readSettings<T>(): Promise<T> {
   const defaultSettings: any = {
-    storeName: "Whisk Fantasies Boutique",
+    storeName: "Whisk Fantasies",
+    websiteName: "Whisk Fantasies",
     announcementText: "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
     qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
     bankName: "Reserve Bank of Mumbai",
@@ -164,21 +190,20 @@ export async function readSettings<T>(): Promise<T> {
     return { ...defaultSettings, ...globalThis._whiskMemorySettings } as T;
   }
 
-  try {
-    const filePath = path.join(MOCK_DATA_DIR, "settings.json");
-    const data = await fs.readFile(filePath, "utf-8");
-    const parsed = JSON.parse(data);
+  // Local JSON fallback (safe read)
+  const filePath = path.join(MOCK_DATA_DIR, "settings.json");
+  const parsed = await safeReadJson(filePath);
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
     const merged = { ...defaultSettings, ...parsed };
     globalThis._whiskMemorySettings = merged;
     return merged as T;
-  } catch (error) {
-    console.error("Error reading settings", error);
-    return defaultSettings as T;
   }
+
+  return defaultSettings as T;
 }
 
 /**
- * Writes global settings object.
+ * Writes global settings object (Supabase + In-Memory + local JSON fallback).
  */
 export async function writeSettings<T>(data: T): Promise<boolean> {
   globalThis._whiskMemorySettings = data;
@@ -214,12 +239,14 @@ export async function writeSettings<T>(data: T): Promise<boolean> {
     }
   }
 
+  // Atomic write to local JSON
   try {
     const filePath = path.join(MOCK_DATA_DIR, "settings.json");
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+    await safeWriteJson(filePath, data);
     return true;
   } catch (error) {
     console.error("Error writing settings", error);
+    // In-memory store already updated, so data is preserved this session
     return true;
   }
 }

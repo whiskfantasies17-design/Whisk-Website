@@ -318,7 +318,7 @@ export default function HomePage() {
           <div className="relative aspect-video lg:aspect-square w-full rounded-2xl overflow-hidden border border-white/10 shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://images.unsplash.com/photo-1535141192574-5d4897c13636?auto=format&fit=crop&w=800&q=80"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHyTjABn7bV3zblYNFkoc5u1YNbjfHiussVAnrQiF8rddXt1zQ1MAZfCk&s=10"
               alt="Custom wedding design illustration"
               className="h-full w-full object-cover"
             />

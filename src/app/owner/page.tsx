@@ -11,7 +11,7 @@ import { Product } from "@/mock-data/products";
 import { cn } from "@/utils/cn";
 
 const DEFAULT_SETTINGS = {
-  storeName: "Whisk Fantasies Boutique",
+  storeName: "Whisk Fantasies",
   websiteName: "Whisk Fantasies",
   announcementText: "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
   qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
@@ -725,7 +725,7 @@ export default function AdminDashboard() {
         <div className="border-b border-primary/5 pb-5 mb-8 flex justify-between items-center">
           <div>
             <h1 className="font-serif text-2xl sm:text-3xl font-bold">{activeTab}</h1>
-            <p className="text-xs text-primary/50 mt-1">Management dashboard for Whisk Fantasies boutique parameters.</p>
+            <p className="text-xs text-primary/50 mt-1">Management dashboard for Whisk Fantasies parameters.</p>
           </div>
         </div>
 

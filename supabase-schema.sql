@@ -53,7 +53,7 @@ CREATE TABLE public.banners (
 -- 4. Settings Table (Global Store Settings)
 CREATE TABLE public.settings (
   id INT PRIMARY KEY DEFAULT 1,
-  "storeName" TEXT DEFAULT 'Whisk Fantasies Boutique',
+  "storeName" TEXT DEFAULT 'Whisk Fantasies',
   "websiteName" TEXT DEFAULT 'Whisk Fantasies',
   "announcementText" TEXT DEFAULT '✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨',
   "qrCodeUrl" TEXT DEFAULT 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies',
@@ -71,7 +71,7 @@ CREATE TABLE public.settings (
 
 -- Insert Default Row in Settings Table
 INSERT INTO public.settings (id, "storeName", "announcementText")
-VALUES (1, 'Whisk Fantasies Boutique', '✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨');
+VALUES (1, 'Whisk Fantasies', '✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨');
 
 -- 5. Coupons Table
 CREATE TABLE public.coupons (

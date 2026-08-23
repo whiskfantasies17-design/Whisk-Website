@@ -18,7 +18,9 @@ async function readZones() {
 }
 
 async function writeZones(data: any[]) {
-  await fs.writeFile(FILE, JSON.stringify(data, null, 2), "utf-8");
+  const temp = FILE + ".tmp";
+  await fs.writeFile(temp, JSON.stringify(data, null, 2), "utf-8");
+  await fs.rename(temp, FILE);
 }
 
 // GET — public: returns all zones

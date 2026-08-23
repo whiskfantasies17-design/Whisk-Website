@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { QrCode, UploadCloud, Loader2, Sparkles, ShieldCheck, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { QrCode, UploadCloud, Loader2, Sparkles, ShieldCheck, CheckCircle, LogIn } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 interface Settings {
-  qrImageUrl: string;
+  qrCodeUrl: string;
+  qrImageUrl?: string;
   bankName: string;
   accountName: string;
   accountNumber: string;
@@ -26,17 +28,19 @@ export default function CheckoutPage() {
 
   // Form inputs
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [zip, setZip] = useState("");
-  
+
   // Screenshot upload state
   const [screenshotBase64, setScreenshotBase64] = useState("");
   const [uploadName, setUploadName] = useState("");
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   // Load session & settings
   useEffect(() => {
@@ -48,7 +52,7 @@ export default function CheckoutPage() {
 
     const loadData = async () => {
       try {
-        // Fetch session
+        // Fetch session (optional — checkout works for guests too)
         const sessRes = await fetch("/api/auth/session");
         const sessData = await sessRes.json();
         if (sessRes.ok && sessData.session) {
@@ -56,6 +60,7 @@ export default function CheckoutPage() {
           setName(sessData.session.name || "");
           setPhone(sessData.session.phone || "");
           setAddress(sessData.session.address || "");
+          setEmail(sessData.session.email || "");
         }
 
         // Fetch settings
@@ -120,7 +125,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cartItems,
-          billingInfo: { name, phone, address, zip },
+          billingInfo: { name, email, phone, address, zip },
           couponApplied: appliedCoupon ? appliedCoupon.code : null,
           subtotal: cartSubtotal,
           shippingFee,
@@ -134,17 +139,25 @@ export default function CheckoutPage() {
         throw new Error(data.error || "Order creation failed.");
       }
 
+      setOrderId(data.orderId || "");
       setSuccess(true);
       clearCart();
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
+
+      // If user is logged in, redirect to their dashboard after 3s
+      if (session) {
+        setTimeout(() => {
+          router.push("/user");
+        }, 3000);
+      }
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Determine QR source: uploaded base64 → or qrCodeUrl (API-generated URL)
+  const qrSrc = settings?.qrImageUrl || settings?.qrCodeUrl || "";
 
   if (loadingSettings) {
     return (
@@ -166,15 +179,48 @@ export default function CheckoutPage() {
         </p>
       </div>
 
+      {/* Guest login nudge — shown only when not logged in */}
+      {!session && (
+        <div className="bg-accent/5 border border-accent/20 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-2.5 text-primary/70">
+            <LogIn size={16} className="text-accent flex-shrink-0" />
+            <span>
+              <strong className="text-primary">Have an account?</strong> Log in to auto-fill your details and track your order.
+            </span>
+          </div>
+          <Link
+            href="/user"
+            className="flex-shrink-0 rounded-full bg-accent text-white px-4 py-2 font-bold text-[11px] hover:bg-accent/90 transition-all"
+          >
+            Sign In
+          </Link>
+        </div>
+      )}
+
       {success ? (
-        <div className="flex flex-col items-center justify-center text-center py-20 bg-white border border-primary/5 rounded-3xl space-y-4 shadow-sm max-w-md mx-auto">
+        <div className="flex flex-col items-center justify-center text-center py-20 bg-white border border-primary/5 rounded-3xl space-y-5 shadow-sm max-w-md mx-auto">
           <div className="rounded-full bg-emerald-50 p-6 text-emerald-600">
             <CheckCircle size={48} className="animate-bounce" />
           </div>
-          <h3 className="font-serif text-xl font-bold text-primary">Order Created!</h3>
+          <h3 className="font-serif text-xl font-bold text-primary">Order Placed!</h3>
+          {orderId && (
+            <p className="text-xs font-mono text-primary/50 bg-secondary/20 px-4 py-2 rounded-full">
+              Order ID: {orderId}
+            </p>
+          )}
           <p className="text-sm text-primary/50 max-w-[280px]">
-            Your payment is now pending review. Redirecting to your tracking dashboard...
+            Your payment screenshot is under review. We&apos;ll confirm your order within 2 hours via WhatsApp.
           </p>
+          {session ? (
+            <p className="text-xs text-primary/40">Redirecting to your dashboard...</p>
+          ) : (
+            <Link
+              href="/"
+              className="rounded-full bg-primary text-white px-6 py-3 text-xs font-bold hover:bg-primary/90 transition-all"
+            >
+              Back to Home
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
@@ -201,7 +247,7 @@ export default function CheckoutPage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Evelyn Vance"
+                    placeholder="Your full name"
                     className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-xs text-primary focus:outline-none focus:border-accent"
                   />
                 </div>
@@ -214,11 +260,27 @@ export default function CheckoutPage() {
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 987-6543"
+                    placeholder="+91 98765 43210"
                     className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-xs text-primary focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
+
+              {/* Email — required for guests, optional for logged in users */}
+              {!session && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-primary/60">
+                    Email (for order confirmation)
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-xs text-primary focus:outline-none focus:border-accent"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 space-y-1">
@@ -230,7 +292,7 @@ export default function CheckoutPage() {
                     required
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="124 Baker St, New York, NY"
+                    placeholder="Flat no, Building, Street, Area"
                     className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-xs text-primary focus:outline-none focus:border-accent"
                   />
                 </div>
@@ -265,37 +327,47 @@ export default function CheckoutPage() {
               <div className="space-y-5 pt-4 border-t border-primary/5">
                 <h2 className="font-serif text-lg font-bold text-primary flex items-center gap-1.5">
                   <QrCode size={20} className="text-accent" />
-                  2. Scan & Transfer
+                  2. Scan &amp; Transfer
                 </h2>
                 <p className="text-xs text-primary/60 leading-relaxed">
-                  Whisk Fantasies uses a secure manual bank clearance protocol. Transfer the total amount to the accounts details below or scan the bank QR code.
+                  Whisk Fantasies uses a secure manual bank clearance protocol. Transfer the total amount to the account details below or scan the bank QR code.
                 </p>
 
                 {settings && (
                   <div className="flex flex-col sm:flex-row gap-6 items-center bg-secondary/15 rounded-2xl p-4 border border-primary/5">
                     {/* QR Code image */}
-                    <div className="h-32 w-32 relative overflow-hidden rounded-xl border border-primary/5 bg-white p-1">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={settings.qrImageUrl}
-                        alt="Bank payment QR code"
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
+                    {qrSrc && (
+                      <div className="h-32 w-32 relative overflow-hidden rounded-xl border border-primary/5 bg-white p-1 flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={qrSrc}
+                          alt="Bank payment QR code"
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                    )}
                     {/* Account Info */}
                     <div className="text-xs space-y-1.5 text-primary/80">
-                      <div>
-                        Bank Name: <span className="font-bold text-primary">{settings.bankName}</span>
-                      </div>
-                      <div>
-                        Account Name: <span className="font-bold text-primary">{settings.accountName}</span>
-                      </div>
-                      <div>
-                        Account No: <span className="font-bold text-primary font-mono">{settings.accountNumber}</span>
-                      </div>
-                      <div>
-                        Routing Code: <span className="font-bold text-primary font-mono">{settings.routingNumber}</span>
-                      </div>
+                      {settings.bankName && (
+                        <div>
+                          Bank Name: <span className="font-bold text-primary">{settings.bankName}</span>
+                        </div>
+                      )}
+                      {settings.accountName && (
+                        <div>
+                          Account Name: <span className="font-bold text-primary">{settings.accountName}</span>
+                        </div>
+                      )}
+                      {settings.accountNumber && (
+                        <div>
+                          Account No: <span className="font-bold text-primary font-mono">{settings.accountNumber}</span>
+                        </div>
+                      )}
+                      {settings.routingNumber && (
+                        <div>
+                          IFSC Code: <span className="font-bold text-primary font-mono">{settings.routingNumber}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -344,7 +416,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Sparkles size={14} />
-                    Submit Custom Order for Verification
+                    Submit Order for Verification
                   </>
                 )}
               </button>
