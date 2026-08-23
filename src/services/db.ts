@@ -185,15 +185,30 @@ export async function writeSettings<T>(data: T): Promise<boolean> {
 
   if (isSupabaseConfigured()) {
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.1`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.1`, {
         method: "PATCH",
         headers: {
           apikey: SUPABASE_KEY!,
           Authorization: `Bearer ${SUPABASE_KEY!}`,
           "Content-Type": "application/json",
+          Prefer: "return=minimal",
         },
         body: JSON.stringify(data),
       });
+
+      if (!res.ok) {
+        // Fallback UPSERT
+        await fetch(`${SUPABASE_URL}/rest/v1/settings`, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY!,
+            Authorization: `Bearer ${SUPABASE_KEY!}`,
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates",
+          },
+          body: JSON.stringify({ id: 1, ...(data as any) }),
+        });
+      }
     } catch (err) {
       console.error("Supabase write settings error:", err);
     }
