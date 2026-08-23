@@ -4,8 +4,18 @@
 -- URL: https://supabase.com/dashboard/project/_/sql
 -- ========================================================
 
+-- Drop pre-existing tables to prevent column mismatch errors
+DROP TABLE IF EXISTS public.products CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;
+DROP TABLE IF EXISTS public.banners CASCADE;
+DROP TABLE IF EXISTS public.settings CASCADE;
+DROP TABLE IF EXISTS public.coupons CASCADE;
+DROP TABLE IF EXISTS public.delivery CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.reviews CASCADE;
+
 -- 1. Products Table
-CREATE TABLE IF NOT EXISTS public.products (
+CREATE TABLE public.products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   price NUMERIC NOT NULL,
@@ -23,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.products (
 );
 
 -- 2. Categories Table
-CREATE TABLE IF NOT EXISTS public.categories (
+CREATE TABLE public.categories (
   id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   image TEXT,
@@ -31,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 );
 
 -- 3. Banners Table (Hero Carousel)
-CREATE TABLE IF NOT EXISTS public.banners (
+CREATE TABLE public.banners (
   id SERIAL PRIMARY KEY,
   image TEXT NOT NULL,
   title TEXT,
@@ -41,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.banners (
 );
 
 -- 4. Settings Table (Global Store Settings)
-CREATE TABLE IF NOT EXISTS public.settings (
+CREATE TABLE public.settings (
   id INT PRIMARY KEY DEFAULT 1,
   "storeName" TEXT DEFAULT 'Whisk Fantasies Boutique',
   "websiteName" TEXT DEFAULT 'Whisk Fantasies',
@@ -59,20 +69,19 @@ CREATE TABLE IF NOT EXISTS public.settings (
   "activeOffer" JSONB DEFAULT '{}'::jsonb
 );
 
--- Insert Default Row in Settings Table if missing
+-- Insert Default Row in Settings Table
 INSERT INTO public.settings (id, "storeName", "announcementText")
-VALUES (1, 'Whisk Fantasies Boutique', '✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨')
-ON CONFLICT (id) DO NOTHING;
+VALUES (1, 'Whisk Fantasies Boutique', '✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨');
 
 -- 5. Coupons Table
-CREATE TABLE IF NOT EXISTS public.coupons (
+CREATE TABLE public.coupons (
   id SERIAL PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
   "discountPercentage" NUMERIC NOT NULL
 );
 
 -- 6. Delivery Zones Table
-CREATE TABLE IF NOT EXISTS public.delivery (
+CREATE TABLE public.delivery (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   pincodes JSONB DEFAULT '[]'::jsonb,
@@ -81,7 +90,7 @@ CREATE TABLE IF NOT EXISTS public.delivery (
 );
 
 -- 7. Orders Table
-CREATE TABLE IF NOT EXISTS public.orders (
+CREATE TABLE public.orders (
   id TEXT PRIMARY KEY,
   "userId" TEXT,
   "userName" TEXT,
@@ -96,7 +105,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
 );
 
 -- 8. Reviews Table
-CREATE TABLE IF NOT EXISTS public.reviews (
+CREATE TABLE public.reviews (
   id TEXT PRIMARY KEY,
   "productId" TEXT,
   "orderId" TEXT,
@@ -107,7 +116,7 @@ CREATE TABLE IF NOT EXISTS public.reviews (
   date TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Disable RLS or Allow Full Access for REST API calls
+-- Disable Row Level Security (RLS) to grant unrestricted REST API access
 ALTER TABLE public.products DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.banners DISABLE ROW LEVEL SECURITY;
