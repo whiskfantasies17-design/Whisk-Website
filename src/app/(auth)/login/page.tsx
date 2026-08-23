@@ -38,7 +38,11 @@ function LoginForm() {
 
       // Successful login
       router.refresh();
-      router.push(data.user.role === "admin" || data.user.role === "super-admin" ? "/admin" : redirect);
+      if (data.user?.role === "admin" || data.user?.role === "super-admin") {
+        router.push("/owner");
+      } else {
+        router.push(redirect !== "/" ? redirect : "/user");
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please check your credentials.");
     } finally {

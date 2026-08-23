@@ -75,8 +75,8 @@ export const Navbar: React.FC = () => {
 
   // Dynamic user profile routing path
   const profileHref = session
-    ? (session.role === "admin" || session.role === "super-admin" ? "/admin" : "/dashboard")
-    : "/login";
+    ? (session.role === "admin" || session.role === "super-admin" ? "/owner" : "/user")
+    : "/user";
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all duration-300 glass border-b border-primary/5">
