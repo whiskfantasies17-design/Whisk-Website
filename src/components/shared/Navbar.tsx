@@ -19,18 +19,26 @@ export const Navbar: React.FC = () => {
   const [theme, setTheme] = useState("light");
   const [session, setSession] = useState<any>(null);
 
-  // Fetch the current session dynamically
+  const [storeSettings, setStoreSettings] = useState<any>(null);
+
+  // Fetch current session and settings dynamically
   useEffect(() => {
-    const fetchSession = async () => {
+    const fetchInitialData = async () => {
       try {
         const res = await fetch("/api/auth/session");
         const data = await res.json();
         if (res.ok && data.session) {
           setSession(data.session);
         }
+
+        const setRes = await fetch("/api/settings");
+        const setData = await setRes.json();
+        if (setRes.ok && setData.settings) {
+          setStoreSettings(setData.settings);
+        }
       } catch (e) {}
     };
-    fetchSession();
+    fetchInitialData();
   }, []);
 
   // Load and apply the stored theme on mount
@@ -78,16 +86,25 @@ export const Navbar: React.FC = () => {
     ? (session.role === "admin" || session.role === "super-admin" ? "/owner" : "/user")
     : "/user";
 
+  const announcement = storeSettings?.announcementText;
+  const brandName = storeSettings?.storeName || storeSettings?.websiteName || "WHISK FANTASIES";
+
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 glass border-b border-primary/5">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <span className="font-serif text-2xl font-bold tracking-wider text-primary sm:text-3xl">
-              WHISK FANTASIES
-            </span>
-          </Link>
+    <>
+      {announcement && (
+        <div className="bg-accent text-white text-[11px] font-bold py-2 px-4 text-center tracking-wide shadow-sm flex items-center justify-center gap-2">
+          <span>{announcement}</span>
+        </div>
+      )}
+      <header className="sticky top-0 z-40 w-full transition-all duration-300 glass border-b border-primary/5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-20 items-center justify-between gap-4">
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0">
+              <span className="font-serif text-2xl font-bold tracking-wider text-primary sm:text-3xl uppercase">
+                {brandName}
+              </span>
+            </Link>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
@@ -244,5 +261,6 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
     </header>
+    </>
   );
 };

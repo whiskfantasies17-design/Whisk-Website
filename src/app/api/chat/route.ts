@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readTable } from "@/services/db";
+import { readSettings } from "@/services/db";
 
 export async function POST(request: Request) {
   try {
@@ -8,9 +8,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing message query" }, { status: 400 });
     }
 
-    const settings = await readTable<any>("settings");
+    const settings = await readSettings<any>();
     const groqApiKey = settings?.groqApiKey || "";
-    const aiShopContext = settings?.aiShopContext || "";
+    const aiShopContext = settings?.aiShopContext || settings?.systemPrompt || "";
     const aiRules = settings?.aiRules || [];
 
     // 1. Try Groq API if key is available

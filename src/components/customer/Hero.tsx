@@ -43,17 +43,20 @@ const HERO_SLIDES: Slide[] = [
 
 export const Hero: React.FC = () => {
   const [heroSlides, setHeroSlides] = useState<Slide[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const fetchBanners = async () => {
     try {
       const res = await fetch("/api/banners");
       const data = await res.json();
-      if (res.ok && data.banners && data.banners.length > 0) {
+      if (res.ok && data.banners) {
         setHeroSlides(data.banners);
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoaded(true);
     }
   };
 
@@ -61,16 +64,7 @@ export const Hero: React.FC = () => {
     fetchBanners();
   }, []);
 
-  const activeSlides = heroSlides.length > 0 ? heroSlides : [
-    {
-      id: 1,
-      image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1600&q=80",
-      title: "Handcrafted Cakes for Every Celebration",
-      subtitle: "From elegant birthday cakes to luxurious wedding creations, Whisk Fantasies crafts fresh, eggless delights with premium ingredients and personalized designs.",
-      ctaText: "Order Now",
-      ctaLink: "/cakes",
-    }
-  ];
+  const activeSlides = heroSlides;
 
   useEffect(() => {
     if (activeSlides.length <= 1) return;
@@ -88,7 +82,7 @@ export const Hero: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
   };
 
-  if (activeSlides.length === 0) return null;
+  if (!loaded || activeSlides.length === 0) return null;
 
   return (
     <section className="relative w-full h-[70vh] sm:h-[80vh] overflow-hidden bg-primary">
