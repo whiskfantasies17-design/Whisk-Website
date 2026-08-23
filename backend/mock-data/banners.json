@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1600&q=80",
+    "title": "Confectionery Masterpieces",
+    "subtitle": "Handcrafted boutique cakes baked fresh with premium organic ingredients for luxury palates.",
+    "ctaText": "Order Online",
+    "ctaLink": "/cakes"
+  },
+  {
+    "id": 2,
+    "image": "https://images.unsplash.com/photo-1535141192574-5d4897c13636?auto=format&fit=crop&w=1600&q=80",
+    "title": "Unforgettable Wedding Details",
+    "subtitle": "Bespoke multi-tiered couture cakes tailored to celebrate your eternal love stories.",
+    "ctaText": "Explore Bridal Couture",
+    "ctaLink": "/cakes?occasion=Wedding"
+  },
+  {
+    "id": 3,
+    "image": "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=1600&q=80",
+    "title": "Sweet Birthdays & Memories",
+    "subtitle": "Vibrant designs filled with luxurious gourmet flavors to sweeten your celebrations.",
+    "ctaText": "Browse Collection",
+    "ctaLink": "/cakes?occasion=Birthday"
+  }
+]

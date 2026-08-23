@@ -1,0 +1,16 @@
+[
+  { "name": "Birthday Cakes", "slug": "birthday-cakes", "image": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Anniversary Cakes", "slug": "anniversary-cakes", "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Wedding Cakes", "slug": "wedding-cakes", "image": "https://images.unsplash.com/photo-1535141192574-5d4897c13636?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Chocolate Cakes", "slug": "chocolate-cakes", "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Cheesecakes", "slug": "cheesecakes", "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Healthy Cakes", "slug": "healthy-cakes", "image": "https://images.unsplash.com/photo-1518047601542-79f18c655718?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Brownies", "slug": "brownies", "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Cupcakes", "slug": "cupcakes", "image": "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Cake Jars", "slug": "cake-jars", "image": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Cookies", "slug": "cookies", "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Donuts", "slug": "donuts", "image": "https://images.unsplash.com/photo-1535141192574-5d4897c13636?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Tea Cakes", "slug": "tea-cakes", "image": "https://images.unsplash.com/photo-1518047601542-79f18c655718?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Mini Tarts", "slug": "mini-tarts", "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=400&q=80" },
+  { "name": "Custom Cakes", "slug": "custom-cakes", "image": "https://images.unsplash.com/photo-1586985289688-ca9cf4991941?auto=format&fit=crop&w=400&q=80" }
+]

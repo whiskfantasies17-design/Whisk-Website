@@ -1,0 +1,25 @@
+{
+  "storeName": "Whisk Fantasies",
+  "websiteName": "Whisk Fantasies",
+  "announcementText": "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
+  "qrCodeUrl": "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
+  "bankName": "State Bank of India",
+  "accountName": "Whisk Fantasies Mumbai",
+  "accountNumber": "8424-0168-7697-8890",
+  "ifscCode": "IFSC-WHISK0008424",
+  "whatsappNumber": "+918424016876",
+  "whatsappDefaultMsg": "Hi Whisk Fantasies! I would like to order a custom cake.",
+  "groqApiKey": "",
+  "systemPrompt": "You are Whisk AI, a virtual assistant for Whisk Fantasies bakery...",
+  "aiRules": [],
+  "activeOffer": {
+    "text": "Flash Celebration Offer: Flat 15% Off all confections!",
+    "discountPercentage": 15,
+    "durationHours": 2,
+    "isActive": true,
+    "startedAt": "2026-08-23T13:26:01.922Z"
+  },
+  "routingNumber": "IFSC-WHISK0008424",
+  "whatsappDefaultMessage": "Hi Whisk Fantasies, I would like to design a customized eggless cake in Mumbai!",
+  "aiShopContext": "You are the official virtual assistant for Whisk Fantasies, a vegetarian bakery located at Karm Stambh, LBS Marg, Vikhroli, Mumbai. Answer customer questions about our menu, ordering, timings, and pricing. Be friendly and concise."
+}

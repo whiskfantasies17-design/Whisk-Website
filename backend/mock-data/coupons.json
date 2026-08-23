@@ -1,0 +1,5 @@
+[
+  { "code": "LUXURY10", "discountPercentage": 10, "isActive": true },
+  { "code": "WELCOME15", "discountPercentage": 15, "isActive": true },
+  { "code": "WHISK20", "discountPercentage": 20, "isActive": true }
+]
