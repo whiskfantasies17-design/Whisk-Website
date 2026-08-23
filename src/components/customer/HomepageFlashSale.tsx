@@ -20,7 +20,7 @@ export const HomepageFlashSale: React.FC = () => {
 
   const fetchActiveOffer = async () => {
     try {
-      const res = await fetch("/api/settings");
+      const res = await fetch("/api/settings", { cache: "no-store" });
       const data = await res.json();
       if (res.ok && data.settings && data.settings.activeOffer) {
         setOffer(data.settings.activeOffer);

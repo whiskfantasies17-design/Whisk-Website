@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
     setLoading(true);
     try {
       // Fetch products to find by ID
-      const pRes = await fetch("/api/products");
+      const pRes = await fetch("/api/products", { cache: "no-store" });
       const pData = await pRes.json();
       if (pRes.ok) {
         const item = (pData.products as Product[]).find((p) => p.id === id);
@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
       }
 
       // Fetch reviews
-      const rRes = await fetch(`/api/reviews?productId=${id}`);
+      const rRes = await fetch(`/api/reviews?productId=${id}`, { cache: "no-store" });
       const rData = await rRes.json();
       if (rRes.ok) {
         setReviews(rData.reviews);

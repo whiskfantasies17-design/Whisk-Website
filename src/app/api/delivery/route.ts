@@ -3,6 +3,9 @@ import fs from "fs/promises";
 import path from "path";
 import { getSession } from "@/services/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const FILE = path.join(process.cwd(), "src", "mock-data", "delivery.json");
 
 async function readZones() {

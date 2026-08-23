@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { readTable, writeTable } from "@/services/db";
 import { getSession } from "@/services/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const categories = await readTable("categories");

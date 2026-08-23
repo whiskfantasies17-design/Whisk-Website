@@ -48,7 +48,7 @@ export const Hero: React.FC = () => {
 
   const fetchBanners = async () => {
     try {
-      const res = await fetch("/api/banners");
+      const res = await fetch("/api/banners", { cache: "no-store" });
       const data = await res.json();
       if (res.ok && data.banners) {
         setHeroSlides(data.banners);

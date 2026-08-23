@@ -17,11 +17,11 @@ export default function HomePage() {
 
   const fetchHomeDetails = async () => {
     try {
-      const pRes = await fetch("/api/products");
+      const pRes = await fetch("/api/products", { cache: "no-store" });
       const pData = await pRes.json();
       if (pRes.ok) setProducts(pData.products || []);
 
-      const cRes = await fetch("/api/categories");
+      const cRes = await fetch("/api/categories", { cache: "no-store" });
       const cData = await cRes.json();
       if (cRes.ok) setCategories(cData.categories || []);
     } catch (e) {

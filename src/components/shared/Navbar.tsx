@@ -25,13 +25,13 @@ export const Navbar: React.FC = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const res = await fetch("/api/auth/session");
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
         const data = await res.json();
         if (res.ok && data.session) {
           setSession(data.session);
         }
 
-        const setRes = await fetch("/api/settings");
+        const setRes = await fetch("/api/settings", { cache: "no-store" });
         const setData = await setRes.json();
         if (setRes.ok && setData.settings) {
           setStoreSettings(setData.settings);

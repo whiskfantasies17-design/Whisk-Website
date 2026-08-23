@@ -3,6 +3,9 @@ import { readTable, writeTable } from "@/services/db";
 import { getSession } from "@/services/auth";
 import { Product } from "@/mock-data/products";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);

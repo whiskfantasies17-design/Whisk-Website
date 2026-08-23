@@ -38,7 +38,7 @@ function CakesContent() {
       if (selectedOccasion) q.set("occasion", selectedOccasion);
       if (customizableOnly) q.set("customizable", "true");
 
-      const res = await fetch(`/api/products?${q.toString()}`);
+      const res = await fetch(`/api/products?${q.toString()}`, { cache: "no-store" });
       const data = await res.json();
       if (res.ok) {
         let list = data.products as Product[];
@@ -92,7 +92,7 @@ function CakesContent() {
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/categories", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (data.categories && data.categories.length > 0) {

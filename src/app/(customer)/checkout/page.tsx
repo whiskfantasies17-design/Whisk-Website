@@ -59,14 +59,14 @@ export default function CheckoutPage() {
         }
 
         // Fetch settings
-        const setRes = await fetch("/api/settings");
+        const setRes = await fetch("/api/settings", { cache: "no-store" });
         const setData = await setRes.json();
         if (setRes.ok && setData.settings) {
           setSettings(setData.settings);
         }
 
         // Fetch delivery zones
-        const dzRes = await fetch("/api/delivery");
+        const dzRes = await fetch("/api/delivery", { cache: "no-store" });
         const dzData = await dzRes.json();
         if (dzRes.ok) setDeliveryZones(dzData.zones || []);
       } catch (e) {
