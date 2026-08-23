@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         phone: "+91 8424016876",
       };
       await setSession(sessionUser);
-      return NextResponse.json({ user: sessionUser });
+      return NextResponse.json({ user: sessionUser, session: sessionUser });
     }
 
     // 2. Lookup in users table (Supabase or local JSON)
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     };
     
     await setSession(sessionUser);
-    return NextResponse.json({ user: sessionUser });
+    return NextResponse.json({ user: sessionUser, session: sessionUser });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || "Internal server error" }, { status: 500 });
   }

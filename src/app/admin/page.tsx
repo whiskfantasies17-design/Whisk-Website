@@ -149,8 +149,9 @@ export default function AdminDashboard() {
         body: JSON.stringify({ email: adminEmail, password: adminPassword }),
       });
       const data = await res.json();
-      if (res.ok && data.session && (data.session.role === "admin" || data.session.role === "super-admin")) {
-        setSession(data.session);
+      const loggedUser = data.user || data.session;
+      if (res.ok && loggedUser && (loggedUser.role === "admin" || loggedUser.role === "super-admin")) {
+        setSession(loggedUser);
         setLoading(true);
         await fetchAllData();
       } else {
