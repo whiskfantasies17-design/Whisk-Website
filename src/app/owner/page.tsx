@@ -3,38 +3,21 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard, ShoppingBag, FolderHeart, Clock, Image, ShoppingCart,
-  Users, MessageSquare, Ticket, Map, Landmark, MessageSquareText, Globe,
-  BrainCircuit, TrendingUp, LogOut, Plus, Edit, Trash2, Eye, ShieldCheck,
-  CheckCircle2, Loader2, Sparkles, Lock
+  LayoutDashboard, ShoppingBag, FolderHeart, LayoutTemplate, Image, Sparkles, ShoppingCart,
+  Users, MessageSquare, Ticket, Map, Landmark, MessageSquareText, Globe, BrainCircuit,
+  TrendingUp, UserCheck, LogOut, Loader2, Plus, Edit, Trash2, CheckCircle2, ShieldCheck, Check, Eye, Star, UploadCloud, Clock
 } from "lucide-react";
+import { Product } from "@/mock-data/products";
 import { cn } from "@/utils/cn";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-  description: string;
-  isSignature?: boolean;
-  isCustomizable?: boolean;
-  rating?: number;
-  reviewsCount?: number;
-  occasions?: string[];
-  flavors?: string[];
-  sizes?: string[];
-}
-
-export default function OwnerPage() {
+export default function AdminDashboard() {
   const router = useRouter();
-
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [orderSubTab, setOrderSubTab] = useState<"ongoing" | "past">("ongoing");
 
-  // Owner Login Credentials
+  // Admin Login Credentials
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [adminLoginError, setAdminLoginError] = useState("");
@@ -62,39 +45,46 @@ export default function OwnerPage() {
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [pName, setPName] = useState("");
   const [pPrice, setPPrice] = useState(0);
-  const [pCategory, setPCategory] = useState("Chocolate Cakes");
-  const [pImage, setPImage] = useState("");
-  const [pDesc, setPDesc] = useState("");
-  const [pSignature, setPSignature] = useState(false);
-  const [pCustomizable, setPCustomizable] = useState(false);
+  const [pCategory, setPCategory] = useState("");
+  const [pDescription, setPDescription] = useState("");
+  const [pOccasions, setPOccasions] = useState("");
   const [pFlavors, setPFlavors] = useState("");
   const [pSizes, setPSizes] = useState("");
+  const [pSignature, setPSignature] = useState(false);
+  const [pCustomizable, setPCustomizable] = useState(false);
+  const [pImage, setPImage] = useState("");
 
-  // Coupon state
-  const [couponFormOpen, setCouponFormOpen] = useState(false);
-  const [selectedCoupon, setSelectedCoupon] = useState<any | null>(null);
-  const [cCode, setCCode] = useState("");
-  const [cDiscount, setCDiscount] = useState(10);
-  const [cActive, setCActive] = useState(true);
-
-  // Category state
+  // Category addition & edit states
+  const [selectedCategoryItem, setSelectedCategoryItem] = useState<any | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [catName, setCatName] = useState("");
   const [catImage, setCatImage] = useState("");
-  const [catSlug, setCatSlug] = useState("");
 
-  // Banner state
+  // Banner CRUD states
+  const [selectedBannerItem, setSelectedBannerItem] = useState<any | null>(null);
   const [bannerFormOpen, setBannerFormOpen] = useState(false);
-  const [bTitle, setBTitle] = useState("");
-  const [bSubtitle, setBSubtitle] = useState("");
-  const [bImage, setBImage] = useState("");
+  const [bannerTitle, setBannerTitle] = useState("");
+  const [bannerSubtitle, setBannerSubtitle] = useState("");
+  const [bannerCtaText, setBannerCtaText] = useState("");
+  const [bannerCtaLink, setBannerCtaLink] = useState("");
+  const [bannerImage, setBannerImage] = useState("");
 
-  // Inspecting Order state
+  // Coupon CRUD states
+  const [selectedCouponItem, setSelectedCouponItem] = useState<any | null>(null);
+  const [couponFormOpen, setCouponFormOpen] = useState(false);
+  const [couponCodeText, setCouponCodeText] = useState("");
+  const [couponDiscountPercent, setCouponDiscountPercent] = useState(10);
+
+  // AI Knowledge rule addition
+  const [aiKeyword, setAiKeyword] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+
+  // Order inspector details modal
   const [inspectingOrder, setInspectingOrder] = useState<any | null>(null);
 
+  // Load Session and master databases
   const fetchAllData = async (activeUser?: any) => {
     try {
-      // 1. Session check
       const currentSession = activeUser || session;
       if (!currentSession) {
         const sRes = await fetch("/api/auth/session");
@@ -108,37 +98,37 @@ export default function OwnerPage() {
         }
       }
 
-      // 2. Fetch products
+      // Fetch products
       const pRes = await fetch("/api/products");
       const pData = await pRes.json();
       if (pRes.ok) setProducts(pData.products);
 
-      // 3. Fetch orders
+      // Fetch orders
       const oRes = await fetch("/api/orders");
       const oData = await oRes.json();
       if (oRes.ok) setOrders(oData.orders);
 
-      // 4. Fetch categories
+      // Fetch categories
       const cRes = await fetch("/api/categories");
       const cData = await cRes.json();
       if (cRes.ok) setCategories(cData.categories);
 
-      // 5. Fetch banners
+      // Fetch banners
       const bRes = await fetch("/api/banners");
       const bData = await bRes.json();
       if (bRes.ok) setBanners(bData.banners);
 
-      // 6. Fetch coupons
+      // Fetch coupons
       const cpRes = await fetch("/api/coupons");
       const cpData = await cpRes.json();
       if (cpRes.ok) setCoupons(cpData.coupons);
 
-      // 7. Fetch settings
+      // Fetch settings
       const stRes = await fetch("/api/settings");
       const stData = await stRes.json();
       if (stRes.ok) setSettings(stData.settings);
 
-      // 8. Fetch delivery zones
+      // Fetch delivery zones
       const dzRes = await fetch("/api/delivery");
       const dzData = await dzRes.json();
       if (dzRes.ok) setDeliveryZones(dzData.zones);
@@ -168,7 +158,7 @@ export default function OwnerPage() {
         setLoading(true);
         await fetchAllData(loggedUser);
       } else {
-        setAdminLoginError(data.error || "Access denied. Only store owners and administrators can access this panel.");
+        setAdminLoginError(data.error || "Access denied. Only store administrators can access this panel.");
       }
     } catch (err: any) {
       setAdminLoginError("Something went wrong. Please try again.");
@@ -193,118 +183,102 @@ export default function OwnerPage() {
   // Base64 file converter helper
   const handleFileChangeHelper = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string) => void) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setter(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setter(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 1. PRODUCTS WORKSPACE ACTIONS
+  const openProductForm = (product?: Product) => {
+    if (product) {
+      setSelectedProduct(product);
+      setPName(product.name);
+      setPPrice(product.price);
+      setPCategory(product.category);
+      setPDescription(product.description);
+      setPOccasions(product.occasions.join(", "));
+      setPFlavors(product.flavors.join(", "));
+      setPSizes(product.sizes.join(", "));
+      setPSignature(product.isSignature);
+      setPCustomizable(product.isCustomizable);
+      setPImage(product.image);
+    } else {
+      setSelectedProduct(null);
+      setPName("");
+      setPPrice(1200);
+      setPCategory("Chocolate Cakes");
+      setPDescription("");
+      setPOccasions("Birthday, Anniversary");
+      setPFlavors("Classic Vanilla, Belgian Chocolate");
+      setPSizes("0.5 kg, 1 kg, 2 kg");
+      setPSignature(false);
+      setPCustomizable(false);
+      setPImage("https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80");
     }
+    setProductFormOpen(true);
   };
 
-  // ── Handlers for CRUD ──
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this product?")) return;
-    try {
-      const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
-      if (res.ok) fetchAllData();
-    } catch (e) {}
-  };
-
-  const handleSaveProduct = async (e: React.FormEvent) => {
+  const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
-      id: selectedProduct ? selectedProduct.id : `prod-${Date.now()}`,
+      id: selectedProduct?.id || `cake-${Date.now()}`,
       name: pName,
       price: Number(pPrice),
       category: pCategory,
-      image: pImage || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
-      description: pDesc,
+      description: pDescription,
+      occasions: pOccasions.split(",").map((s) => s.trim()).filter(Boolean),
+      flavors: pFlavors.split(",").map((s) => s.trim()).filter(Boolean),
+      sizes: pSizes.split(",").map((s) => s.trim()).filter(Boolean),
       isSignature: pSignature,
       isCustomizable: pCustomizable,
-      flavors: pFlavors ? pFlavors.split(",").map((s) => s.trim()) : ["Standard"],
-      sizes: pSizes ? pSizes.split(",").map((s) => s.trim()) : ["0.5 kg", "1 kg"],
+      image: pImage,
+      rating: selectedProduct?.rating || 5.0,
+      reviewsCount: selectedProduct?.reviewsCount || 1,
     };
 
     try {
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setProductFormOpen(false);
         fetchAllData();
       }
-    } catch (e) {}
-  };
-
-  const openProductForm = (prod?: Product) => {
-    if (prod) {
-      setSelectedProduct(prod);
-      setPName(prod.name);
-      setPPrice(prod.price);
-      setPCategory(prod.category);
-      setPImage(prod.image);
-      setPDesc(prod.description);
-      setPSignature(prod.isSignature || false);
-      setPCustomizable(prod.isCustomizable || false);
-      setPFlavors(prod.flavors ? prod.flavors.join(", ") : "");
-      setPSizes(prod.sizes ? prod.sizes.join(", ") : "");
-    } else {
-      setSelectedProduct(null);
-      setPName(""); setPPrice(599); setPCategory("Chocolate Cakes"); setPImage(""); setPDesc("");
-      setPSignature(false); setPCustomizable(false); setPFlavors("Chocolate, Nutella"); setPSizes("0.5 kg, 1 kg");
+    } catch (e) {
+      console.error(e);
     }
-    setProductFormOpen(true);
   };
 
-  const handleSaveCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = { code: cCode.toUpperCase(), discountPercentage: Number(cDiscount), active: cActive };
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this confectionery design?")) return;
     try {
-      const res = await fetch("/api/coupons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        setCouponFormOpen(false);
         fetchAllData();
       }
     } catch (e) {}
   };
 
-  const openCouponForm = (cp?: any) => {
-    if (cp) {
-      setSelectedCoupon(cp);
-      setCCode(cp.code);
-      setCDiscount(cp.discountPercentage);
-      setCActive(cp.active);
-    } else {
-      setSelectedCoupon(null);
-      setCCode(""); setCDiscount(15); setCActive(true);
-    }
-    setCouponFormOpen(true);
-  };
-
-  const handleDeleteCoupon = async (code: string) => {
-    if (!confirm(`Delete coupon ${code}?`)) return;
-    try {
-      const res = await fetch(`/api/coupons?code=${code}`, { method: "DELETE" });
-      if (res.ok) fetchAllData();
-    } catch (e) {}
-  };
-
+  // 2. ORDER VERIFICATION WORKSPACE ACTIONS
   const handleVerifyOrderPayment = async (orderId: string) => {
     try {
       const res = await fetch("/api/orders", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, paymentStatus: "Verified", deliveryStatus: "Paid" })
+        body: JSON.stringify({
+          orderId,
+          paymentStatus: "Verified",
+          deliveryStatus: "Confirmed",
+        }),
       });
       if (res.ok) {
-        if (inspectingOrder && inspectingOrder.id === orderId) {
-          setInspectingOrder({ ...inspectingOrder, paymentStatus: "Verified", deliveryStatus: "Paid" });
-        }
+        setInspectingOrder(null);
         fetchAllData();
       }
     } catch (e) {}
@@ -315,19 +289,258 @@ export default function OwnerPage() {
       const res = await fetch("/api/orders", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, deliveryStatus: step })
+        body: JSON.stringify({
+          orderId,
+          deliveryStatus: step,
+        }),
       });
       if (res.ok) {
-        if (inspectingOrder && inspectingOrder.id === orderId) {
-          setInspectingOrder({ ...inspectingOrder, deliveryStatus: step });
-        }
+        setInspectingOrder(null);
         fetchAllData();
       }
     } catch (e) {}
   };
 
-  const handleSaveSettings = async (updatedSettings: any) => {
-    setSettings(updatedSettings);
+  // 3. CATEGORIES CRUD ACTIONS
+  const openCategoryForm = (item?: any) => {
+    if (item) {
+      setSelectedCategoryItem(item);
+      setCatName(item.name);
+      setCatImage(item.image);
+    } else {
+      setSelectedCategoryItem(null);
+      setCatName("");
+      setCatImage("https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=500&q=80");
+    }
+    setCategoryFormOpen(true);
+  };
+
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catName) return;
+
+    let updatedList = [...categories];
+    const categoryPayload = {
+      name: catName,
+      slug: catName.toLowerCase().replace(/\s+/g, "-"),
+      image: catImage
+    };
+
+    if (selectedCategoryItem) {
+      // Update existing
+      updatedList = updatedList.map((c) =>
+        c.name === selectedCategoryItem.name ? categoryPayload : c
+      );
+    } else {
+      // Create new
+      updatedList.push(categoryPayload);
+    }
+
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) {
+        setCategoryFormOpen(false);
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteCategory = async (nameToDelete: string) => {
+    if (!confirm("Are you sure you want to delete this category?")) return;
+    const updatedList = categories.filter((c) => c.name !== nameToDelete);
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) fetchAllData();
+    } catch (e) {}
+  };
+
+  // 4. HERO BANNER CRUD ACTIONS
+  const openBannerForm = (item?: any) => {
+    if (item) {
+      setSelectedBannerItem(item);
+      setBannerTitle(item.title);
+      setBannerSubtitle(item.subtitle);
+      setBannerCtaText(item.ctaText);
+      setBannerCtaLink(item.ctaLink);
+      setBannerImage(item.image);
+    } else {
+      setSelectedBannerItem(null);
+      setBannerTitle("");
+      setBannerSubtitle("");
+      setBannerCtaText("Order Now");
+      setBannerCtaLink("/cakes");
+      setBannerImage("https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1600&q=80");
+    }
+    setBannerFormOpen(true);
+  };
+
+  const handleBannerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let updatedList = [...banners];
+    const bannerPayload = {
+      id: selectedBannerItem ? selectedBannerItem.id : Date.now(),
+      title: bannerTitle,
+      subtitle: bannerSubtitle,
+      ctaText: bannerCtaText,
+      ctaLink: bannerCtaLink,
+      image: bannerImage
+    };
+
+    if (selectedBannerItem) {
+      updatedList = updatedList.map((b) =>
+        b.id === selectedBannerItem.id ? bannerPayload : b
+      );
+    } else {
+      updatedList.push(bannerPayload);
+    }
+
+    try {
+      const res = await fetch("/api/banners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) {
+        setBannerFormOpen(false);
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteBanner = async (idToDelete: number) => {
+    if (!confirm("Are you sure you want to remove this banner slide?")) return;
+    const updatedList = banners.filter((b) => b.id !== idToDelete);
+    try {
+      const res = await fetch("/api/banners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) fetchAllData();
+    } catch (e) {}
+  };
+
+  // 5. COUPON CRUD ACTIONS
+  const openCouponForm = (item?: any) => {
+    if (item) {
+      setSelectedCouponItem(item);
+      setCouponCodeText(item.code);
+      setCouponDiscountPercent(item.discountPercentage);
+    } else {
+      setSelectedCouponItem(null);
+      setCouponCodeText("");
+      setCouponDiscountPercent(10);
+    }
+    setCouponFormOpen(true);
+  };
+
+  const handleCouponSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponCodeText) return;
+
+    let updatedList = [...coupons];
+    const couponPayload = {
+      code: couponCodeText.toUpperCase(),
+      discountPercentage: Number(couponDiscountPercent),
+      isActive: true
+    };
+
+    if (selectedCouponItem) {
+      updatedList = updatedList.map((c) =>
+        c.code === selectedCouponItem.code ? couponPayload : c
+      );
+    } else {
+      updatedList.push(couponPayload);
+    }
+
+    try {
+      const res = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) {
+        setCouponFormOpen(false);
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteCoupon = async (codeToDelete: string) => {
+    if (!confirm("Are you sure you want to delete this coupon?")) return;
+    const updatedList = coupons.filter((c) => c.code !== codeToDelete);
+    try {
+      const res = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+      if (res.ok) fetchAllData();
+    } catch (e) {}
+  };
+
+  // 6. OFFERS WIDGET SUBMISSION
+  const handleOfferToggleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!settings || !settings.activeOffer) return;
+
+    const offerData = settings.activeOffer;
+    const updatedSettings = {
+      ...settings,
+      activeOffer: {
+        ...offerData,
+        startedAt: offerData.isActive ? new Date().toISOString() : ""
+      }
+    };
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings)
+      });
+      if (res.ok) {
+        alert("Offers configured successfully!");
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  // 7. AI KNOWLEDGE BASE RULES
+  const handleAddAiRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiKeyword || !aiResponse || !settings) return;
+    const updatedRules = [...(settings.aiRules || []), {
+      keywords: aiKeyword.split(",").map((k) => k.trim().toLowerCase()),
+      response: aiResponse
+    }];
+    const updatedSettings = { ...settings, aiRules: updatedRules };
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings)
+      });
+      if (res.ok) {
+        setAiKeyword("");
+        setAiResponse("");
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteAiRule = async (idxToDelete: number) => {
+    if (!confirm("Remove this chatbot knowledge rule?")) return;
+    const updatedRules = (settings.aiRules || []).filter((_: any, i: number) => i !== idxToDelete);
+    const updatedSettings = { ...settings, aiRules: updatedRules };
     try {
       const res = await fetch("/api/settings", {
         method: "POST",
@@ -369,23 +582,19 @@ export default function OwnerPage() {
     );
   }
 
-  // ── Standalone Owner Login Screen ──
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary text-white p-4">
         <div className="w-full max-w-md bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
-            <div className="mx-auto h-12 w-12 rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent">
-              <Lock size={24} />
-            </div>
-            <span className="text-[10px] font-bold tracking-widest text-accent uppercase block pt-2">
-              Whisk Fantasies Owner Portal
+            <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
+              Bespoke Administration
             </span>
             <h1 className="font-serif text-3xl font-bold tracking-wider">
-              OWNER LOGIN
+              WHISK ADMIN
             </h1>
             <p className="text-xs text-white/60">
-              Enter your owner credentials to access administration & store controls.
+              Please enter your administrator credentials to manage parameters.
             </p>
           </div>
 
@@ -398,7 +607,7 @@ export default function OwnerPage() {
           <form onSubmit={handleAdminLoginSubmit} className="space-y-4 text-xs">
             <div className="space-y-1.5">
               <label className="font-bold text-white/70 uppercase tracking-wider text-[10px]">
-                Owner Email
+                Admin Email
               </label>
               <input
                 type="email"
@@ -427,132 +636,127 @@ export default function OwnerPage() {
             <button
               type="submit"
               disabled={adminSubmitting}
-              className="w-full rounded-full bg-accent text-white py-3.5 font-bold hover:bg-accent/90 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-60 text-xs"
+              className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-3.5 rounded-full flex items-center justify-center gap-2 text-xs tracking-wider shadow-lg hover:shadow-accent/20 cursor-pointer disabled:opacity-60 transition-all font-sans"
             >
               {adminSubmitting ? (
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 className="animate-spin" size={16} />
               ) : (
-                <>
-                  <Sparkles size={14} /> Log In to Owner Portal
-                </>
+                "Unlock Dashboard"
               )}
             </button>
           </form>
-
-          <div className="pt-2 text-center border-t border-white/5">
-            <a href="/" className="text-[11px] text-white/40 hover:text-white transition-colors">
-              ← Return to Main Storefront
-            </a>
-          </div>
         </div>
       </div>
     );
   }
 
-  // ── Authenticated Owner Panel ──
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row text-primary">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-primary text-white p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-primary/10">
+    <div className="min-h-screen flex bg-background text-primary">
+      {/* Sidebar Navigation */}
+      <aside className="w-64 bg-primary text-white flex-shrink-0 flex flex-col justify-between p-5 border-r border-white/5">
         <div className="space-y-8">
-          <div>
-            <span className="text-[9px] uppercase tracking-widest text-accent font-bold">Store Administration</span>
-            <h1 className="font-serif text-xl font-bold tracking-tight mt-0.5">Whisk Owner</h1>
+          <div className="flex items-center gap-2 border-b border-white/10 pb-4">
+            <span className="font-serif text-xl font-bold tracking-widest">
+              WHISK ADMIN
+            </span>
           </div>
-
-          <nav className="space-y-1 text-xs">
-            {adminMenu.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.name;
-              return (
-                <button
-                  key={item.name}
-                  onClick={() => setActiveTab(item.name)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl font-semibold transition-all cursor-pointer text-left",
-                    isActive ? "bg-accent text-white shadow-md" : "text-white/70 hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  <Icon size={16} />
-                  {item.name}
-                </button>
-              );
-            })}
+          
+          <nav className="flex flex-col gap-1 max-h-[70vh] overflow-y-auto pr-1">
+            {adminMenu.map((menu) => (
+              <button
+                key={menu.name}
+                onClick={() => setActiveTab(menu.name)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all text-left cursor-pointer",
+                  activeTab === menu.name
+                    ? "bg-accent text-white shadow-md shadow-accent/20"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                )}
+              >
+                <menu.icon size={16} />
+                {menu.name}
+              </button>
+            ))}
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-white/10 mt-6">
-          <div className="flex items-center justify-between text-xs">
-            <div>
-              <p className="font-bold">{session?.name}</p>
-              <p className="text-[10px] text-white/50">{session?.email}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-xl hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors cursor-pointer"
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+        <div className="space-y-4 border-t border-white/10 pt-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-white/50">
+            <UserCheck size={14} /> {session?.name}
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-xs font-bold text-red-400 hover:bg-red-950/20 transition-all text-left cursor-pointer"
+          >
+            <LogOut size={16} /> Log Out
+          </button>
         </div>
       </aside>
 
       {/* Main Workspace */}
-      <main className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto max-h-screen">
-        <div className="flex justify-between items-center border-b border-primary/5 pb-4">
+      <main className="flex-1 p-8 overflow-y-auto max-h-screen">
+        {/* Title */}
+        <div className="border-b border-primary/5 pb-5 mb-8 flex justify-between items-center">
           <div>
-            <h2 className="font-serif text-2xl font-bold text-primary">{activeTab}</h2>
-            <p className="text-xs text-primary/50 mt-0.5">Manage live parameters and store confections</p>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold">{activeTab}</h1>
+            <p className="text-xs text-primary/50 mt-1">Management dashboard for Whisk Fantasies boutique parameters.</p>
           </div>
         </div>
 
-        {/* 1. Dashboard Overview Tab */}
+        {/* 1. Dashboard Stats workspace */}
         {activeTab === "Dashboard" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-1">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wider">Total Orders Cleared</span>
-                <p className="font-serif text-3xl font-bold text-primary">{orders.length}</p>
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Gross Revenue</span>
+                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">₹{totalRevenue}</h3>
+                <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Verified payments only</span>
               </div>
-              <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-1">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wider">Total Verified Revenue</span>
-                <p className="font-serif text-3xl font-bold text-emerald-600">₹{totalRevenue.toLocaleString("en-IN")}</p>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Total Order Volume</span>
+                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">{orders.length} orders</h3>
+                <span className="text-[10px] text-accent font-semibold block mt-1">Active requests on file</span>
               </div>
-              <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-1">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wider">Total Confections Baked</span>
-                <p className="font-serif text-3xl font-bold text-accent">{totalQuantityCakes}</p>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Confectionery Items sold</span>
+                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">{totalQuantityCakes} cakes</h3>
+                <span className="text-[10px] text-primary/60 block mt-1">Freshly baked details</span>
+              </div>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Registered Users</span>
+                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">8 registered</h3>
+                <span className="text-[10px] text-primary/60 block mt-1">Mock account pool</span>
               </div>
             </div>
 
-            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
-              <h3 className="font-serif text-base font-bold text-primary">Recent Orders Overview</h3>
+            <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-4">
+              <h3 className="font-serif text-lg font-bold text-primary">Recent Order Requests</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
                       <th className="pb-3">Order ID</th>
                       <th className="pb-3">Customer</th>
-                      <th className="pb-3">Amount</th>
-                      <th className="pb-3">Payment</th>
-                      <th className="pb-3">Delivery Step</th>
+                      <th className="pb-3">Total</th>
+                      <th className="pb-3">Payment status</th>
+                      <th className="pb-3">Delivery status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.slice(0, 5).map((o) => (
-                      <tr key={o.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                        <td className="py-3 font-mono font-bold text-accent">{o.id.slice(0, 15)}...</td>
-                        <td className="py-3 font-semibold">{o.userName}</td>
-                        <td className="py-3 font-bold">₹{o.total}</td>
-                        <td className="py-3">
+                    {orders.slice(0, 5).map((order) => (
+                      <tr key={order.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-4 font-mono font-bold text-accent">{order.id}</td>
+                        <td className="py-4 font-semibold">{order.userName}</td>
+                        <td className="py-4 font-semibold">₹{order.total}</td>
+                        <td className="py-4">
                           <span className={cn(
-                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
-                            o.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                            "px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px]",
+                            order.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
                           )}>
-                            {o.paymentStatus}
+                            {order.paymentStatus}
                           </span>
                         </td>
-                        <td className="py-3 font-semibold text-primary/70">{o.deliveryStatus}</td>
+                        <td className="py-4 font-semibold">{order.deliveryStatus}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -562,11 +766,10 @@ export default function OwnerPage() {
           </div>
         )}
 
-        {/* 2. Products Tab */}
+        {/* 2. Products Manager workspace */}
         {activeTab === "Products" && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-primary/60">Total Products: {products.length}</span>
+            <div className="flex justify-end">
               <button
                 onClick={() => openProductForm()}
                 className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
@@ -575,101 +778,435 @@ export default function OwnerPage() {
               </button>
             </div>
 
-            {/* Product Form Modal */}
+            {/* Product Forms Modal Overlay */}
             {productFormOpen && (
               <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-lg space-y-5 max-h-[90vh] overflow-y-auto">
+                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-6">
                   <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
-                    {selectedProduct ? "Edit Confection" : "Add New Confection"}
+                    {selectedProduct ? "Edit Confectionery" : "Create Confectionery"}
                   </h2>
-                  <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
-                    <div className="space-y-1">
-                      <label className="font-bold text-primary/60 uppercase">Product Name</label>
-                      <input type="text" required value={pName} onChange={(e) => setPName(e.target.value)}
-                        className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+                  <form onSubmit={handleProductSubmit} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="font-bold text-primary/60 uppercase">Price (₹)</label>
-                        <input type="number" required value={pPrice} onChange={(e) => setPPrice(Number(e.target.value))}
-                          className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                        <label className="font-bold text-primary/60 uppercase">Cake Name</label>
+                        <input type="text" required value={pName} onChange={(e) => setPName(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
                       </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Base Price (₹)</label>
+                        <input type="number" required value={pPrice} onChange={(e) => setPPrice(Number(e.target.value))} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="font-bold text-primary/60 uppercase">Category</label>
-                        <select value={pCategory} onChange={(e) => setPCategory(e.target.value)}
-                          className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary">
-                          <option value="Chocolate Cakes">Chocolate Cakes</option>
-                          <option value="Non-Chocolate Cakes">Non-Chocolate Cakes</option>
-                          <option value="Fusion Cakes">Fusion Cakes</option>
-                          <option value="Cheesecakes">Cheesecakes</option>
-                          <option value="Tea Cakes">Tea Cakes</option>
-                          <option value="Cupcakes">Cupcakes</option>
-                          <option value="Brownies">Brownies</option>
+                        <select value={pCategory} onChange={(e) => setPCategory(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary">
+                          {categories.map((c) => (
+                            <option key={c.name} value={c.name}>{c.name}</option>
+                          ))}
                         </select>
                       </div>
+                      
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Upload Cake Image</label>
+                        <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
+                          <span className="text-[10px] text-primary/50 truncate max-w-[200px]">
+                            {pImage ? "Image loaded (base64)" : "Select file..."}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileChangeHelper(e, setPImage)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <UploadCloud size={14} className="text-primary/50" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-bold text-primary/60 uppercase">Image URL</label>
-                      <input type="text" value={pImage} onChange={(e) => setPImage(e.target.value)}
-                        placeholder="https://..." className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                    </div>
+
+                    {pImage && (
+                      <div className="space-y-1">
+                        <span className="font-bold text-primary/60 uppercase block">Image Preview</span>
+                        <div className="h-28 w-40 overflow-hidden rounded-xl border border-primary/5 relative bg-secondary/15">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={pImage} alt="Cake uploader preview" className="h-full w-full object-cover" />
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-1">
                       <label className="font-bold text-primary/60 uppercase">Description</label>
-                      <textarea value={pDesc} onChange={(e) => setPDesc(e.target.value)} rows={3}
-                        className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-2.5 text-primary resize-none" />
+                      <textarea rows={3} value={pDescription} onChange={(e) => setPDescription(e.target.value)} className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-2.5 text-primary" />
                     </div>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={pSignature} onChange={(e) => setPSignature(e.target.checked)} />
-                        <span>Signature Selection</span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Occasions (csv)</label>
+                        <input type="text" value={pOccasions} onChange={(e) => setPOccasions(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Flavors (csv)</label>
+                        <input type="text" value={pFlavors} onChange={(e) => setPFlavors(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Sizes (csv)</label>
+                        <input type="text" value={pSizes} onChange={(e) => setPSizes(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-6 border-t border-primary/5 pt-4">
+                      <label className="flex items-center gap-2 font-bold cursor-pointer">
+                        <input type="checkbox" checked={pSignature} onChange={(e) => setPSignature(e.target.checked)} className="rounded accent-accent h-4 w-4" />
+                        Signature Spotlight
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={pCustomizable} onChange={(e) => setPCustomizable(e.target.checked)} />
-                        <span>Customizable</span>
+                      <label className="flex items-center gap-2 font-bold cursor-pointer">
+                        <input type="checkbox" checked={pCustomizable} onChange={(e) => setPCustomizable(e.target.checked)} className="rounded accent-accent h-4 w-4" />
+                        Customizable Design
                       </label>
                     </div>
-                    <div className="flex gap-3 pt-2 justify-end">
-                      <button type="button" onClick={() => setProductFormOpen(false)}
-                        className="rounded-full border border-primary/15 px-5 py-2 text-xs font-bold hover:bg-secondary cursor-pointer">Cancel</button>
-                      <button type="submit"
-                        className="rounded-full bg-primary text-white px-5 py-2 text-xs font-bold hover:bg-primary/95 cursor-pointer">Save Confection</button>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <button type="button" onClick={() => setProductFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2.5 font-bold hover:bg-secondary">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95">Save Product</button>
                     </div>
                   </form>
                 </div>
               </div>
             )}
 
-            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Category</th>
-                    <th className="pb-3">Price</th>
-                    <th className="pb-3">Rating</th>
-                    <th className="pb-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                      <td className="py-4 font-bold text-primary">{p.name}</td>
-                      <td className="py-4 text-primary/60">{p.category}</td>
-                      <td className="py-4 font-bold">₹{p.price}</td>
-                      <td className="py-4 text-amber-500 font-bold">★ {p.rating}</td>
-                      <td className="py-4 text-right space-x-1">
-                        <button onClick={() => openProductForm(p)} className="p-1.5 text-primary/50 hover:text-accent cursor-pointer"><Edit size={14} /></button>
-                        <button onClick={() => handleDeleteProduct(p.id)} className="p-1.5 text-primary/50 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
-                      </td>
+            {/* Products List Table */}
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
+                      <th className="pb-3">Cake</th>
+                      <th className="pb-3">Category</th>
+                      <th className="pb-3">Price</th>
+                      <th className="pb-3">Spotlight</th>
+                      <th className="pb-3">Custom</th>
+                      <th className="pb-3 text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {products.map((p) => (
+                      <tr key={p.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-4 flex items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.image} alt={p.name} className="h-10 w-10 object-cover rounded-lg border border-primary/5" />
+                          <span className="font-semibold text-primary">{p.name}</span>
+                        </td>
+                        <td className="py-4 font-semibold text-primary/60">{p.category}</td>
+                        <td className="py-4 font-bold">₹{p.price}</td>
+                        <td className="py-4 font-semibold">{p.isSignature ? "Signature" : "Standard"}</td>
+                        <td className="py-4 font-semibold">{p.isCustomizable ? "Customizable" : "Fixed"}</td>
+                        <td className="py-4 text-right space-x-1">
+                          <button
+                            onClick={() => openProductForm(p)}
+                            className="p-2 text-primary/50 hover:text-accent transition-colors"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(p.id)}
+                            className="p-2 text-primary/50 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
 
-        {/* 6. Orders Inspection workspace — split Ongoing / Past */}
+        {/* 3. Categories manager workspace */}
+        {activeTab === "Categories" && (
+          <div className="space-y-6">
+            <div className="flex justify-end">
+              <button
+                onClick={() => openCategoryForm()}
+                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Plus size={16} /> Add Category
+              </button>
+            </div>
+
+            {/* Category Form modal */}
+            {categoryFormOpen && (
+              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-md space-y-6">
+                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
+                    {selectedCategoryItem ? "Edit Category" : "Add Category"}
+                  </h2>
+                  <form onSubmit={handleCategorySubmit} className="space-y-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Category Title</label>
+                      <input type="text" required value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="E.g., Number Cakes" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Category Image File</label>
+                      <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
+                        <span className="text-[10px] text-primary/50 truncate max-w-[250px]">
+                          {catImage ? "Image loaded (base64)" : "Upload Cover Image..."}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChangeHelper(e, setCatImage)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <UploadCloud size={14} className="text-primary/50" />
+                      </div>
+                    </div>
+
+                    {catImage && (
+                      <div className="h-20 w-32 overflow-hidden rounded-xl border border-primary/5 bg-secondary/15">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={catImage} alt="Category preview" className="h-full w-full object-cover" />
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setCategoryFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Category</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
+                      <th className="pb-3">Cover Image</th>
+                      <th className="pb-3">Category Title</th>
+                      <th className="pb-3">Slug</th>
+                      <th className="pb-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((c) => (
+                      <tr key={c.name} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={c.image} alt={c.name} className="h-10 w-16 object-cover rounded-lg border border-primary/5" />
+                        </td>
+                        <td className="py-3 font-semibold text-primary">{c.name}</td>
+                        <td className="py-3 font-mono text-accent">{c.slug}</td>
+                        <td className="py-3 text-right space-x-1">
+                          <button
+                            onClick={() => openCategoryForm(c)}
+                            className="p-1.5 text-primary/50 hover:text-accent transition-colors"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(c.name)}
+                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Offers Tab configuration */}
+        {activeTab === "Offers Manager" && settings && settings.activeOffer && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Limited-Time Flash Offer</h3>
+            <form onSubmit={handleOfferToggleSubmit} className="space-y-4 text-xs max-w-md">
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Offer Text / Headline</label>
+                <input
+                  type="text"
+                  required
+                  value={settings.activeOffer.text}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    activeOffer: { ...settings.activeOffer, text: e.target.value }
+                  })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-bold text-primary/60 uppercase">Discount Percentage (%)</label>
+                  <input
+                    type="number"
+                    required
+                    value={settings.activeOffer.discountPercentage}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      activeOffer: { ...settings.activeOffer, discountPercentage: Number(e.target.value) }
+                    })}
+                    className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-primary/60 uppercase">Countdown Duration (Hours)</label>
+                  <input
+                    type="number"
+                    required
+                    value={settings.activeOffer.durationHours}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      activeOffer: { ...settings.activeOffer, durationHours: Number(e.target.value) }
+                    })}
+                    className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 font-bold cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={settings.activeOffer.isActive}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      activeOffer: { ...settings.activeOffer, isActive: e.target.checked }
+                    })}
+                    className="rounded accent-accent h-5 w-5"
+                  />
+                  Run Flash Offer Live
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="rounded-full bg-primary text-white px-8 py-3 font-bold hover:bg-primary/95"
+              >
+                Save & Update Offer
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* 5. Hero Banner Manager */}
+        {activeTab === "Hero Banners" && (
+          <div className="space-y-6">
+            <div className="flex justify-end">
+              <button
+                onClick={() => openBannerForm()}
+                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Plus size={16} /> Add Banner
+              </button>
+            </div>
+
+            {/* Banner form modal */}
+            {bannerFormOpen && (
+              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-5">
+                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
+                    {selectedBannerItem ? "Edit Banner Slide" : "Add Banner Slide"}
+                  </h2>
+                  <form onSubmit={handleBannerSubmit} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Headline Title</label>
+                        <input type="text" required value={bannerTitle} onChange={(e) => setBannerTitle(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">CTA Label</label>
+                        <input type="text" required value={bannerCtaText} onChange={(e) => setBannerCtaText(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">Subtitle Description</label>
+                        <input type="text" required value={bannerSubtitle} onChange={(e) => setBannerSubtitle(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-primary/60 uppercase">CTA Redirect Link</label>
+                        <input type="text" required value={bannerCtaLink} onChange={(e) => setBannerCtaLink(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Upload Banner Background</label>
+                      <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
+                        <span className="text-[10px] text-primary/50 truncate max-w-[300px]">
+                          {bannerImage ? "Image loaded (base64)" : "Select Slide Background..."}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChangeHelper(e, setBannerImage)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <UploadCloud size={14} className="text-primary/50" />
+                      </div>
+                    </div>
+
+                    {bannerImage && (
+                      <div className="h-28 w-48 overflow-hidden rounded-xl border border-primary/5 bg-secondary/15">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={bannerImage} alt="Banner slide preview" className="h-full w-full object-cover" />
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setBannerFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Slide</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {banners.map((slide) => (
+                  <div key={slide.id} className="border border-primary/5 rounded-2xl overflow-hidden bg-background relative flex flex-col justify-between">
+                    <div className="aspect-[3/1] relative bg-secondary overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={slide.image} alt={slide.title} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <h4 className="font-serif font-bold text-sm text-primary">{slide.title}</h4>
+                      <p className="text-[10px] text-primary/60 leading-relaxed">{slide.subtitle}</p>
+                      <div className="flex justify-between items-center pt-2 border-t border-primary/5 text-[10px]">
+                        <span>Link: <span className="font-mono text-accent">{slide.ctaLink}</span></span>
+                        <div className="space-x-1">
+                          <button
+                            onClick={() => openBannerForm(slide)}
+                            className="bg-primary/5 hover:bg-accent hover:text-white transition-all rounded-full p-2 text-primary/50"
+                          >
+                            <Edit size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBanner(slide.id)}
+                            className="bg-primary/5 hover:bg-destructive hover:text-white transition-all rounded-full p-2 text-primary/50"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 6. Orders Inspection & Payment verification workspace — split Ongoing / Past */}
         {activeTab === "Orders list" && (
           <div className="space-y-6">
             <div className="flex gap-2 flex-wrap">
@@ -798,9 +1335,9 @@ export default function OwnerPage() {
                       <div className="space-y-2">
                         <h3 className="font-bold text-xs uppercase tracking-wider text-primary/60">Recipient Address</h3>
                         <div className="bg-secondary/15 rounded-2xl p-4 border border-primary/5 text-xs space-y-1.5">
-                          <div>Name: <span className="font-semibold">{inspectingOrder.billingInfo?.name}</span></div>
-                          <div>Phone: <span className="font-semibold">{inspectingOrder.billingInfo?.phone}</span></div>
-                          <div>Address: <span className="font-semibold">{inspectingOrder.billingInfo?.address}, {inspectingOrder.billingInfo?.zip}</span></div>
+                          <div>Name: <span className="font-semibold">{inspectingOrder.billingInfo.name}</span></div>
+                          <div>Phone: <span className="font-semibold">{inspectingOrder.billingInfo.phone}</span></div>
+                          <div>Address: <span className="font-semibold">{inspectingOrder.billingInfo.address}, {inspectingOrder.billingInfo.zip}</span></div>
                         </div>
                       </div>
 
@@ -848,6 +1385,124 @@ export default function OwnerPage() {
           </div>
         )}
 
+        {/* 7. Customers database list */}
+        {activeTab === "Customers base" && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
+                    <th className="pb-3">Name</th>
+                    <th className="pb-3">Email</th>
+                    <th className="pb-3">Phone</th>
+                    <th className="pb-3">Address</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.reduce((acc: any[], order) => {
+                    if (!acc.some((c) => c.email === order.userEmail)) {
+                      acc.push({ name: order.userName, email: order.userEmail, phone: order.billingInfo.phone, address: order.billingInfo.address });
+                    }
+                    return acc;
+                  }, []).map((cust: any, idx: number) => (
+                    <tr key={idx} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                      <td className="py-4 font-semibold text-primary">{cust.name}</td>
+                      <td className="py-4 text-primary/60">{cust.email}</td>
+                      <td className="py-4 font-mono">{cust.phone}</td>
+                      <td className="py-4 text-primary/60">{cust.address}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 8. Reviews dashboard tab */}
+        {activeTab === "Reviews base" && (
+          <AdminReviewsTab fetchAllData={fetchAllData} />
+        )}
+
+        {/* 9. Coupons workspace list */}
+        {activeTab === "Coupons list" && (
+          <div className="space-y-6">
+            <div className="flex justify-end">
+              <button
+                onClick={() => openCouponForm()}
+                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Plus size={16} /> Add Coupon
+              </button>
+            </div>
+
+            {/* Coupon Form modal */}
+            {couponFormOpen && (
+              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-md space-y-6">
+                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
+                    {selectedCouponItem ? "Edit Coupon" : "Add Coupon"}
+                  </h2>
+                  <form onSubmit={handleCouponSubmit} className="space-y-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Coupon Code</label>
+                      <input type="text" required value={couponCodeText} onChange={(e) => setCouponCodeText(e.target.value)} placeholder="E.g., FESTIVE15" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Discount Percentage (%)</label>
+                      <input type="number" required value={couponDiscountPercent} onChange={(e) => setCouponDiscountPercent(Number(e.target.value))} placeholder="15" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setCouponFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Coupon</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
+                      <th className="pb-3">Coupon Code</th>
+                      <th className="pb-3">Discount Percentage</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {coupons.map((c) => (
+                      <tr key={c.code} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-4 font-mono font-bold text-accent text-sm">{c.code}</td>
+                        <td className="py-4 font-semibold">{c.discountPercentage}% discount</td>
+                        <td className="py-4">
+                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full uppercase text-[9px]">Active</span>
+                        </td>
+                        <td className="py-4 text-right space-x-1">
+                          <button
+                            onClick={() => openCouponForm(c)}
+                            className="p-1.5 text-primary/50 hover:text-accent transition-colors"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCoupon(c.code)}
+                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 10. Delivery Zones CRUD */}
         {activeTab === "Delivery Zones" && (
           <div className="space-y-6">
@@ -868,6 +1523,7 @@ export default function OwnerPage() {
               </button>
             </div>
 
+            {/* Zone Form Modal */}
             {zoneFormOpen && (
               <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
                 <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-lg space-y-5">
@@ -904,12 +1560,14 @@ export default function OwnerPage() {
                       <textarea required value={zonePincodes} onChange={(e) => setZonePincodes(e.target.value)}
                         rows={3} placeholder="400079, 400083, 400601"
                         className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-2.5 text-primary resize-none" />
+                      <p className="text-[10px] text-primary/40">Separate each pincode with a comma</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="font-bold text-primary/60 uppercase">Delivery Fee (₹)</label>
                         <input type="number" min={0} required value={zoneFee} onChange={(e) => setZoneFee(Number(e.target.value))}
                           className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                        <p className="text-[10px] text-primary/40">Use 0 for free delivery</p>
                       </div>
                       <div className="space-y-1">
                         <label className="font-bold text-primary/60 uppercase">Est. Duration</label>
@@ -930,67 +1588,365 @@ export default function OwnerPage() {
               </div>
             )}
 
+            {/* Zones Table */}
             <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold text-[10px] tracking-wider">
-                    <th className="pb-3">Zone Name</th>
-                    <th className="pb-3">Pincodes</th>
-                    <th className="pb-3">Delivery Fee</th>
-                    <th className="pb-3">Est. Duration</th>
-                    <th className="pb-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deliveryZones.map((zone) => (
-                    <tr key={zone.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                      <td className="py-4 font-bold text-primary">{zone.name}</td>
-                      <td className="py-4 max-w-[220px]">
-                        <div className="flex flex-wrap gap-1">
-                          {(zone.pincodes || []).slice(0, 4).map((pin: string) => (
-                            <span key={pin} className="px-2 py-0.5 bg-primary/5 rounded-full font-mono text-[10px] text-primary">{pin}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 font-bold">
-                        {zone.fee === 0 ? <span className="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Free</span> : <span className="text-primary">₹{zone.fee}</span>}
-                      </td>
-                      <td className="py-4 text-primary/60">{zone.minDuration}</td>
-                      <td className="py-4 text-right space-x-1">
-                        <button
-                          onClick={() => {
-                            setSelectedZone(zone); setZoneName(zone.name); setZonePincodes((zone.pincodes || []).join(", ")); setZoneFee(zone.fee); setZoneDuration(zone.minDuration); setZoneFormOpen(true);
-                          }}
-                          className="p-1.5 text-primary/50 hover:text-accent transition-colors cursor-pointer"
-                        ><Edit size={14} /></button>
-                        <button
-                          onClick={async () => {
-                            if (!confirm("Delete zone?")) return;
-                            const updated = deliveryZones.filter((z) => z.id !== zone.id);
-                            const res = await fetch("/api/delivery", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) });
-                            if (res.ok) fetchAllData();
-                          }}
-                          className="p-1.5 text-primary/50 hover:text-red-500 transition-colors cursor-pointer"
-                        ><Trash2 size={14} /></button>
-                      </td>
+              {deliveryZones.length === 0 ? (
+                <p className="text-xs text-primary/40 py-8 text-center">No delivery zones configured yet. Add your first zone above.</p>
+              ) : (
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold text-[10px] tracking-wider">
+                      <th className="pb-3">Zone Name</th>
+                      <th className="pb-3">Pincodes</th>
+                      <th className="pb-3">Delivery Fee</th>
+                      <th className="pb-3">Est. Duration</th>
+                      <th className="pb-3 text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {deliveryZones.map((zone) => (
+                      <tr key={zone.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-4 font-bold text-primary">{zone.name}</td>
+                        <td className="py-4 max-w-[220px]">
+                          <div className="flex flex-wrap gap-1">
+                            {(zone.pincodes || []).slice(0, 4).map((pin: string) => (
+                              <span key={pin} className="px-2 py-0.5 bg-primary/5 rounded-full font-mono text-[10px] text-primary">{pin}</span>
+                            ))}
+                            {(zone.pincodes || []).length > 4 && (
+                              <span className="px-2 py-0.5 bg-primary/5 rounded-full text-[10px] text-primary/50">+{zone.pincodes.length - 4} more</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 font-bold">
+                          {zone.fee === 0
+                            ? <span className="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Free</span>
+                            : <span className="text-primary">₹{zone.fee}</span>
+                          }
+                        </td>
+                        <td className="py-4 text-primary/60">{zone.minDuration}</td>
+                        <td className="py-4 text-right space-x-1">
+                          <button
+                            onClick={() => {
+                              setSelectedZone(zone);
+                              setZoneName(zone.name);
+                              setZonePincodes((zone.pincodes || []).join(", "));
+                              setZoneFee(zone.fee);
+                              setZoneDuration(zone.minDuration);
+                              setZoneFormOpen(true);
+                            }}
+                            className="p-1.5 text-primary/50 hover:text-accent transition-colors cursor-pointer"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Delete this delivery zone?")) return;
+                              const updated = deliveryZones.filter((z) => z.id !== zone.id);
+                              try {
+                                const res = await fetch("/api/delivery", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify(updated),
+                                });
+                                if (res.ok) fetchAllData();
+                              } catch (err) {}
+                            }}
+                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         )}
 
-        {/* 8. Reviews base tab */}
-        {activeTab === "Reviews base" && (
-          <OwnerReviewsTab fetchAllData={fetchAllData} />
+
+        {/* 11. Payment Settings tab */}
+        {activeTab === "Payment Settings" && settings && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">UPI Merchant Bank details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs max-w-2xl">
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Bank Name</label>
+                <input
+                  type="text"
+                  value={settings.bankName}
+                  onChange={(e) => setSettings({ ...settings, bankName: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Account Name</label>
+                <input
+                  type="text"
+                  value={settings.accountName}
+                  onChange={(e) => setSettings({ ...settings, accountName: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Account Number</label>
+                <input
+                  type="text"
+                  value={settings.accountNumber}
+                  onChange={(e) => setSettings({ ...settings, accountNumber: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">IFSC Routing Code</label>
+                <input
+                  type="text"
+                  value={settings.routingNumber}
+                  onChange={(e) => setSettings({ ...settings, routingNumber: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="font-bold text-primary/60 uppercase">Upload Merchant UPI QR Code Image</label>
+                <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
+                  <span className="text-[10px] text-primary/50 truncate max-w-[400px]">
+                    {settings.qrImageUrl ? "QR image loaded (base64)" : "Select merchant QR file..."}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChangeHelper(e, (val) => setSettings({ ...settings, qrImageUrl: val }))}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  <UploadCloud size={14} className="text-primary/50" />
+                </div>
+              </div>
+            </div>
+
+            {settings.qrImageUrl && (
+              <div className="space-y-1 text-xs">
+                <span className="font-bold text-primary/60 uppercase block">Active QR Code Preview</span>
+                <div className="h-32 w-32 border border-primary/15 rounded-xl overflow-hidden p-1 bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={settings.qrImageUrl} alt="UPI QR Code preview" className="h-full w-full object-contain" />
+                </div>
+              </div>
+            )}
+            
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/settings", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(settings)
+                });
+                if (res.ok) alert("Payment settings saved persistently!");
+              }}
+              className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 text-xs block"
+            >
+              Save Bank details
+            </button>
+          </div>
+        )}
+
+        {/* 12. WhatsApp Settings */}
+        {activeTab === "WhatsApp Rules" && settings && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">WhatsApp Hook configuration</h3>
+            <div className="text-xs space-y-4 max-w-md">
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">WhatsApp Support Number</label>
+                <input
+                  type="text"
+                  value={settings.whatsappNumber}
+                  onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Pre-filled Message text</label>
+                <input
+                  type="text"
+                  value={settings.whatsappDefaultMessage}
+                  onChange={(e) => setSettings({ ...settings, whatsappDefaultMessage: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(settings)
+                  });
+                  if (res.ok) alert("WhatsApp configurations saved persistently!");
+                }}
+                className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95"
+              >
+                Save WhatsApp Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 13. Website config settings */}
+        {activeTab === "Website config" && settings && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Metadata settings</h3>
+            <div className="text-xs space-y-4 max-w-md">
+              <div className="space-y-1">
+                <label className="font-bold text-primary/60 uppercase">Brand/Store Name</label>
+                <input
+                  type="text"
+                  value={settings.websiteName}
+                  onChange={(e) => setSettings({ ...settings, websiteName: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(settings)
+                  });
+                  if (res.ok) alert("Website name updated persistently!");
+                }}
+                className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95"
+              >
+                Save Configs
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 14. AI Chatbot knowledge rule settings */}
+        {activeTab === "AI Chatbot rules" && settings && (
+          <div className="space-y-8">
+            {/* Groq Credentials & Context Textarea */}
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+              <h3 className="font-serif text-lg font-bold text-primary pb-3 border-b border-primary/5">
+                Groq LLM Chatbot settings
+              </h3>
+              <div className="space-y-4 text-xs max-w-2xl">
+                <div className="space-y-1">
+                  <label className="font-bold text-primary/60 uppercase">Groq API Key (from groq.com)</label>
+                  <input
+                    type="password"
+                    placeholder="gsk_..."
+                    value={settings.groqApiKey || ""}
+                    onChange={(e) => setSettings({ ...settings, groqApiKey: e.target.value })}
+                    className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-bold text-primary/60 uppercase">Shop Context Description (for AI Analysis)</label>
+                  <textarea
+                    rows={6}
+                    placeholder="Enter detailed facts about the shop (location, delivery fee, menu, timings, rules)..."
+                    value={settings.aiShopContext || ""}
+                    onChange={(e) => setSettings({ ...settings, aiShopContext: e.target.value })}
+                    className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-3 text-primary leading-relaxed"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const res = await fetch("/api/settings", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(settings)
+                    });
+                    if (res.ok) alert("Groq API parameters updated persistently!");
+                  }}
+                  className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 transition-all cursor-pointer"
+                >
+                  Save Groq Config
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1 bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
+                <h3 className="font-serif text-base font-bold text-primary">Add Local Answer Rule (Fallback)</h3>
+                <form onSubmit={handleAddAiRule} className="space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-bold text-primary/60 uppercase">Triggers / Keywords (csv)</label>
+                    <input type="text" required value={aiKeyword} onChange={(e) => setAiKeyword(e.target.value)} placeholder="E.g., eggless, vegan" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-primary/60 uppercase">Automated Answer Response</label>
+                    <textarea required rows={4} value={aiResponse} onChange={(e) => setAiResponse(e.target.value)} placeholder="E.g., Yes! We support vegan cakes..." className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-3 text-primary" />
+                  </div>
+                  <button type="submit" className="w-full rounded-full bg-primary text-white py-2.5 font-bold hover:bg-primary/95">Save Rule</button>
+                </form>
+              </div>
+
+              <div className="lg:col-span-2 bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
+                <h3 className="font-serif text-base font-bold text-primary">Current Local Fallback Rules</h3>
+                <div className="space-y-3">
+                  {(settings.aiRules || []).map((rule: any, idx: number) => (
+                    <div key={idx} className="bg-secondary/15 border border-primary/5 p-4 rounded-2xl text-xs space-y-2 relative">
+                      <button
+                        onClick={() => handleDeleteAiRule(idx)}
+                        className="absolute right-3 top-3 text-primary/35 hover:text-destructive transition-colors"
+                        title="Delete rule"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      <div>
+                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Keywords triggers</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {rule.keywords.map((k: string) => (
+                            <span key={k} className="bg-white border border-primary/5 px-2 py-0.5 rounded-md font-mono text-[9px] text-accent font-bold">{k}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Answer response</span>
+                        <p className="text-primary/80 mt-1 leading-relaxed">{rule.response}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 15. Analytics dashboard graphs */}
+        {activeTab === "Analytics view" && (
+          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
+            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Order Velocity Chart</h3>
+            <div className="aspect-[2/1] w-full max-w-2xl bg-secondary/15 rounded-3xl border border-primary/5 flex flex-col justify-end p-6 relative">
+              <div className="absolute inset-0 flex items-center justify-center text-primary/30 text-xs font-bold gap-1">
+                <TrendingUp size={16} /> Sales & Order volumes have risen by 15% this week
+              </div>
+              <div className="w-full flex justify-between items-end h-40 gap-4 relative z-10 pt-10">
+                <div className="w-full bg-accent rounded-t-lg h-[20%]" />
+                <div className="w-full bg-accent rounded-t-lg h-[45%]" />
+                <div className="w-full bg-accent rounded-t-lg h-[30%]" />
+                <div className="w-full bg-accent rounded-t-lg h-[75%]" />
+                <div className="w-full bg-primary rounded-t-lg h-[95%]" />
+              </div>
+              <div className="flex justify-between text-[10px] font-bold text-primary/45 mt-4">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
   );
 }
 
-function OwnerReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
+function AdminReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
 
@@ -1044,6 +2000,11 @@ function OwnerReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
+                    <div className="flex text-amber-400">
+                      {Array.from({ length: rv.rating }).map((_: any, i: number) => (
+                        <Star key={i} size={11} className="fill-current" />
+                      ))}
+                    </div>
                     <span className="text-[10px] font-bold text-primary">{rv.userName}</span>
                     <span className="text-[10px] text-primary/40">{new Date(rv.date).toLocaleDateString("en-IN")}</span>
                   </div>
@@ -1073,3 +2034,4 @@ function OwnerReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
     </div>
   );
 }
+
