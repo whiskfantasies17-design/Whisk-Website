@@ -92,17 +92,20 @@ export default function OwnerPage() {
   // Inspecting Order state
   const [inspectingOrder, setInspectingOrder] = useState<any | null>(null);
 
-  const fetchAllData = async () => {
+  const fetchAllData = async (activeUser?: any) => {
     try {
       // 1. Session check
-      const sRes = await fetch("/api/auth/session");
-      const sData = await sRes.json();
-      if (sRes.ok && sData.session && (sData.session.role === "admin" || sData.session.role === "super-admin")) {
-        setSession(sData.session);
-      } else {
-        setSession(null);
-        setLoading(false);
-        return;
+      const currentSession = activeUser || session;
+      if (!currentSession) {
+        const sRes = await fetch("/api/auth/session");
+        const sData = await sRes.json();
+        if (sRes.ok && sData.session && (sData.session.role === "admin" || sData.session.role === "super-admin")) {
+          setSession(sData.session);
+        } else {
+          setSession(null);
+          setLoading(false);
+          return;
+        }
       }
 
       // 2. Fetch products
@@ -163,7 +166,7 @@ export default function OwnerPage() {
       if (res.ok && loggedUser && (loggedUser.role === "admin" || loggedUser.role === "super-admin")) {
         setSession(loggedUser);
         setLoading(true);
-        await fetchAllData();
+        await fetchAllData(loggedUser);
       } else {
         setAdminLoginError(data.error || "Access denied. Only store owners and administrators can access this panel.");
       }
