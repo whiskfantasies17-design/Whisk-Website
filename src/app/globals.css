@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+:root {
+  /* HSL Colors */
+  --background: 30 20% 98%;      /* Warm cream #FDFBF7 */
+  --foreground: 20 35% 15%;      /* Deep chocolate #2E1A16 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 20 35% 15%;
+
+  --popover: 30 20% 99%;
+  --popover-foreground: 20 35% 15%;
+
+  --primary: 10 32% 14%;         /* Dark brown #2B1814 */
+  --primary-foreground: 30 20% 98%;
+
+  --secondary: 35 25% 92%;       /* Light tan cream */
+  --secondary-foreground: 10 32% 14%;
+
+  --muted: 30 10% 90%;
+  --muted-foreground: 20 15% 45%;
+
+  --accent: 347 53% 60%;         /* Pink rose #D16278 */
+  --accent-foreground: 30 20% 98%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 20 20% 88%;
+  --input: 20 20% 88%;
+  --ring: 347 53% 60%;
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+.glass {
+  background: rgba(253, 251, 247, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(46, 26, 22, 0.08);
+}
+
+.glass-dark {
+  background: rgba(46, 26, 22, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(253, 251, 247, 0.1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark {
+  --background: 20 35% 10%;      /* Dark chocolate-charcoal #1C0F0C */
+  --foreground: 30 20% 98%;      /* Soft warm cream #FDFBF7 */
+
+  --card: 20 35% 12%;            /* Lighter dark brown card */
+  --card-foreground: 30 20% 98%;
+
+  --popover: 20 35% 11%;
+  --popover-foreground: 30 20% 98%;
+
+  --primary: 30 20% 98%;         /* Light cream primary */
+  --primary-foreground: 20 35% 10%;
+
+  --secondary: 20 35% 18%;       /* Slate brown secondary */
+  --secondary-foreground: 30 20% 98%;
+
+  --muted: 20 20% 20%;
+  --muted-foreground: 20 15% 65%;
+
+  --accent: 347 63% 68%;         /* Vibrant rose */
+  --accent-foreground: 20 35% 10%;
+
+  --border: 20 20% 22%;
+  --input: 20 20% 22%;
+}
+
+.dark .glass {
+  background: rgba(28, 15, 12, 0.85);
+  border: 1px solid rgba(253, 251, 247, 0.08);
+}
+
+/* ====== Marquee Animations ====== */
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+@keyframes marquee-right {
+  0%   { transform: translateX(-33.333%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 35s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 35s linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
