@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [orderSubTab, setOrderSubTab] = useState<"ongoing" | "past">("ongoing");
 
   // Admin Login Credentials
   const [adminEmail, setAdminEmail] = useState("");
@@ -1204,32 +1205,25 @@ export default function AdminDashboard() {
         {/* 6. Orders Inspection & Payment verification workspace — split Ongoing / Past */}
         {activeTab === "Orders list" && (
           <div className="space-y-6">
-            {/* Sub-tab switcher */}
-            {(() => {
-              const ongoingOrders = orders.filter((o: any) => o.deliveryStatus !== "Delivered");
-              const pastOrders = orders.filter((o: any) => o.deliveryStatus === "Delivered");
-              const [orderSubTab, setOrderSubTab] = React.useState<"ongoing" | "past">("ongoing");
-              const displayOrders = orderSubTab === "ongoing" ? ongoingOrders : pastOrders;
-              return (
-                <>
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={() => setOrderSubTab("ongoing")}
-                      className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
-                        orderSubTab === "ongoing" ? "bg-amber-500 text-white border-amber-500 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-amber-400"
-                      )}
-                    >
-                      🟠 Ongoing Orders ({ongoingOrders.length})
-                    </button>
-                    <button
-                      onClick={() => setOrderSubTab("past")}
-                      className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
-                        orderSubTab === "past" ? "bg-emerald-600 text-white border-emerald-600 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-emerald-400"
-                      )}
-                    >
-                      ✅ Past Orders ({pastOrders.length})
-                    </button>
-                  </div>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setOrderSubTab("ongoing")}
+                className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
+                  orderSubTab === "ongoing" ? "bg-amber-500 text-white border-amber-500 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-amber-400"
+                )}
+              >
+                🟠 Ongoing Orders ({orders.filter((o: any) => o.deliveryStatus !== "Delivered").length})
+              </button>
+              <button
+                onClick={() => setOrderSubTab("past")}
+                className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
+                  orderSubTab === "past" ? "bg-emerald-600 text-white border-emerald-600 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-emerald-400"
+                )}
+              >
+                ✅ Past Orders ({orders.filter((o: any) => o.deliveryStatus === "Delivered").length})
+              </button>
+            </div>
+
             <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
@@ -1245,50 +1239,55 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayOrders.length === 0 ? (
-                      <tr><td colSpan={7} className="py-10 text-center text-xs text-primary/40">
-                        {orderSubTab === "ongoing" ? "No ongoing orders." : "No delivered orders yet."}
-                      </td></tr>
-                    ) : displayOrders.map((o: any) => (
-                      <tr key={o.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                        <td className="py-4 font-mono font-bold text-accent">{o.id.slice(0, 15)}...</td>
-                        <td className="py-4 text-primary/60">{new Date(o.date).toLocaleDateString("en-IN")}</td>
-                        <td className="py-4 font-semibold">{o.userName}</td>
-                        <td className="py-4 font-bold">₹{o.total}</td>
-                        <td className="py-4">
-                          <span className={cn(
-                            "px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px]",
-                            o.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                          )}>
-                            {o.paymentStatus}
-                          </span>
-                        </td>
-                        <td className="py-4">
-                          <span className={cn(
-                            "font-semibold rounded-full px-2.5 py-0.5 text-[9px] uppercase",
-                            o.deliveryStatus === "Delivered" ? "bg-emerald-100 text-emerald-800"
-                            : o.deliveryStatus === "Out for Delivery" ? "bg-blue-100 text-blue-800"
-                            : o.deliveryStatus === "Preparing" ? "bg-orange-100 text-orange-800"
-                            : "bg-secondary/30 text-primary/75"
-                          )}>{o.deliveryStatus}</span>
-                        </td>
-                        <td className="py-4 text-right">
-                          <button
-                            onClick={() => setInspectingOrder(o)}
-                            className="rounded-full bg-secondary/80 hover:bg-primary hover:text-white px-3 py-1.5 font-bold transition-all flex items-center gap-1 text-[10px] ml-auto cursor-pointer"
-                          >
-                            <Eye size={12} /> Inspect
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      const displayOrders = orders.filter((o: any) =>
+                        orderSubTab === "ongoing" ? o.deliveryStatus !== "Delivered" : o.deliveryStatus === "Delivered"
+                      );
+                      if (displayOrders.length === 0) {
+                        return (
+                          <tr><td colSpan={7} className="py-10 text-center text-xs text-primary/40">
+                            {orderSubTab === "ongoing" ? "No ongoing orders." : "No delivered orders yet."}
+                          </td></tr>
+                        );
+                      }
+                      return displayOrders.map((o: any) => (
+                        <tr key={o.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                          <td className="py-4 font-mono font-bold text-accent">{o.id.slice(0, 15)}...</td>
+                          <td className="py-4 text-primary/60">{new Date(o.date).toLocaleDateString("en-IN")}</td>
+                          <td className="py-4 font-semibold">{o.userName}</td>
+                          <td className="py-4 font-bold">₹{o.total}</td>
+                          <td className="py-4">
+                            <span className={cn(
+                              "px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px]",
+                              o.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                            )}>
+                              {o.paymentStatus}
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            <span className={cn(
+                              "font-semibold rounded-full px-2.5 py-0.5 text-[9px] uppercase",
+                              o.deliveryStatus === "Delivered" ? "bg-emerald-100 text-emerald-800"
+                              : o.deliveryStatus === "Out for Delivery" ? "bg-blue-100 text-blue-800"
+                              : o.deliveryStatus === "Preparing" ? "bg-orange-100 text-orange-800"
+                              : "bg-secondary/30 text-primary/75"
+                            )}>{o.deliveryStatus}</span>
+                          </td>
+                          <td className="py-4 text-right">
+                            <button
+                              onClick={() => setInspectingOrder(o)}
+                              className="rounded-full bg-secondary/80 hover:bg-primary hover:text-white px-3 py-1.5 font-bold transition-all flex items-center gap-1 text-[10px] ml-auto cursor-pointer"
+                            >
+                              <Eye size={12} /> Inspect
+                            </button>
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
             </div>
-                </>
-              );
-            })()}
 
             {inspectingOrder && (
               <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
@@ -1417,79 +1416,7 @@ export default function AdminDashboard() {
 
         {/* 8. Reviews dashboard tab */}
         {activeTab === "Reviews base" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-serif text-lg font-bold text-primary">Customer Reviews</h3>
-                <p className="text-xs text-primary/50 mt-1">All submitted customer feedback from delivered orders.</p>
-              </div>
-              <button
-                onClick={async () => {
-                  if (!confirm("Are you sure you want to permanently delete ALL customer reviews? This cannot be undone.")) return;
-                  try {
-                    const res = await fetch("/api/reviews", { method: "DELETE" });
-                    if (res.ok) { alert("All reviews cleared successfully."); fetchAllData(); }
-                  } catch (e) {}
-                }}
-                className="flex items-center gap-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 text-xs font-bold shadow-md cursor-pointer transition-all"
-              >
-                <Trash2 size={14} /> Clear All Reviews
-              </button>
-            </div>
-
-            {(() => {
-              const [allReviews, setAllReviews] = React.useState<any[]>([]);
-              const [loadingReviews, setLoadingReviews] = React.useState(true);
-              React.useEffect(() => {
-                fetch("/api/reviews").then(r => r.json()).then(d => {
-                  setAllReviews(d.reviews || []);
-                  setLoadingReviews(false);
-                }).catch(() => setLoadingReviews(false));
-              }, []);
-
-              if (loadingReviews) return <div className="text-xs text-primary/40 text-center py-8">Loading reviews...</div>;
-              if (allReviews.length === 0) return (
-                <div className="bg-white border border-primary/5 rounded-3xl p-10 text-center shadow-sm">
-                  <p className="text-xs text-primary/40">No reviews submitted yet.</p>
-                </div>
-              );
-
-              return (
-                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
-                  {allReviews.map((rv: any) => (
-                    <div key={rv.id} className="border-b border-primary/5 pb-4 last:border-b-0">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <div className="flex text-amber-400">
-                              {Array.from({ length: rv.rating }).map((_: any, i: number) => (
-                                <Star key={i} size={11} className="fill-current" />
-                              ))}
-                            </div>
-                            <span className="text-[10px] font-bold text-primary">{rv.userName}</span>
-                            <span className="text-[10px] text-primary/40">{new Date(rv.date).toLocaleDateString("en-IN")}</span>
-                          </div>
-                          <p className="text-xs text-primary/70 italic">&ldquo;{rv.review}&rdquo;</p>
-                          <p className="text-[10px] text-primary/40">Product: {rv.productId}</p>
-                        </div>
-                        <button
-                          onClick={async () => {
-                            const updated = allReviews.filter((r: any) => r.id !== rv.id);
-                            await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ _overwrite: updated }) });
-                            setAllReviews(updated);
-                          }}
-                          className="p-1.5 text-primary/30 hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
-                          title="Remove this review"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
+          <AdminReviewsTab fetchAllData={fetchAllData} />
         )}
 
         {/* 9. Coupons workspace list */}
@@ -2014,3 +1941,93 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+function AdminReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((r) => r.json())
+      .then((d) => {
+        setAllReviews(d.reviews || []);
+        setLoadingReviews(false);
+      })
+      .catch(() => setLoadingReviews(false));
+  }, []);
+
+  const handleClearAll = async () => {
+    if (!confirm("Are you sure you want to permanently delete ALL customer reviews? This cannot be undone.")) return;
+    try {
+      const res = await fetch("/api/reviews", { method: "DELETE" });
+      if (res.ok) {
+        setAllReviews([]);
+        alert("All reviews cleared successfully.");
+        fetchAllData();
+      }
+    } catch (e) {}
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="font-serif text-lg font-bold text-primary">Customer Reviews</h3>
+          <p className="text-xs text-primary/50 mt-1">All submitted customer feedback from delivered orders.</p>
+        </div>
+        <button
+          onClick={handleClearAll}
+          className="flex items-center gap-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 text-xs font-bold shadow-md cursor-pointer transition-all"
+        >
+          <Trash2 size={14} /> Clear All Reviews
+        </button>
+      </div>
+
+      {loadingReviews ? (
+        <div className="text-xs text-primary/40 text-center py-8">Loading reviews...</div>
+      ) : allReviews.length === 0 ? (
+        <div className="bg-white border border-primary/5 rounded-3xl p-10 text-center shadow-sm">
+          <p className="text-xs text-primary/40">No reviews submitted yet.</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
+          {allReviews.map((rv: any) => (
+            <div key={rv.id} className="border-b border-primary/5 pb-4 last:border-b-0">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex text-amber-400">
+                      {Array.from({ length: rv.rating }).map((_: any, i: number) => (
+                        <Star key={i} size={11} className="fill-current" />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-bold text-primary">{rv.userName}</span>
+                    <span className="text-[10px] text-primary/40">{new Date(rv.date).toLocaleDateString("en-IN")}</span>
+                  </div>
+                  <p className="text-xs text-primary/70 italic">&ldquo;{rv.review}&rdquo;</p>
+                  <p className="text-[10px] text-primary/40">Product: {rv.productId}</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const updated = allReviews.filter((r: any) => r.id !== rv.id);
+                    await fetch("/api/reviews", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ _overwrite: updated }),
+                    });
+                    setAllReviews(updated);
+                  }}
+                  className="p-1.5 text-primary/30 hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
+                  title="Remove this review"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
