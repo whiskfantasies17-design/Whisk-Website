@@ -125,39 +125,39 @@ export default function AdminDashboard() {
       }
 
       // Fetch products
-      const pRes = await fetch("/api/products");
+      const pRes = await fetch("/api/products", { cache: "no-store" });
       const pData = await pRes.json();
-      if (pRes.ok) setProducts(pData.products);
+      if (pRes.ok) setProducts(pData.products || []);
 
       // Fetch orders
-      const oRes = await fetch("/api/orders");
+      const oRes = await fetch("/api/orders", { cache: "no-store" });
       const oData = await oRes.json();
-      if (oRes.ok) setOrders(oData.orders);
+      if (oRes.ok) setOrders(oData.orders || []);
 
       // Fetch categories
-      const cRes = await fetch("/api/categories");
+      const cRes = await fetch("/api/categories", { cache: "no-store" });
       const cData = await cRes.json();
-      if (cRes.ok) setCategories(cData.categories);
+      if (cRes.ok) setCategories(cData.categories || []);
 
       // Fetch banners
-      const bRes = await fetch("/api/banners");
+      const bRes = await fetch("/api/banners", { cache: "no-store" });
       const bData = await bRes.json();
-      if (bRes.ok) setBanners(bData.banners);
+      if (bRes.ok) setBanners(bData.banners || []);
 
       // Fetch coupons
-      const cpRes = await fetch("/api/coupons");
+      const cpRes = await fetch("/api/coupons", { cache: "no-store" });
       const cpData = await cpRes.json();
-      if (cpRes.ok) setCoupons(cpData.coupons);
+      if (cpRes.ok) setCoupons(cpData.coupons || []);
 
       // Fetch settings
-      const stRes = await fetch("/api/settings");
+      const stRes = await fetch("/api/settings", { cache: "no-store" });
       const stData = await stRes.json();
-      if (stRes.ok) setSettings(stData.settings);
+      if (stRes.ok) setSettings(stData.settings || DEFAULT_SETTINGS);
 
       // Fetch delivery zones
-      const dzRes = await fetch("/api/delivery");
+      const dzRes = await fetch("/api/delivery", { cache: "no-store" });
       const dzData = await dzRes.json();
-      if (dzRes.ok) setDeliveryZones(dzData.zones);
+      if (dzRes.ok) setDeliveryZones(dzData.zones || []);
 
     } catch (e) {
       console.error(e);

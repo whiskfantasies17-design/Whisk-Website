@@ -97,7 +97,7 @@ body {
   --background: 20 35% 10%;      /* Dark chocolate-charcoal #1C0F0C */
   --foreground: 30 20% 98%;      /* Soft warm cream #FDFBF7 */
 
-  --card: 20 35% 12%;            /* Lighter dark brown card */
+  --card: 20 35% 14%;            /* Lighter dark brown card */
   --card-foreground: 30 20% 98%;
 
   --popover: 20 35% 11%;
@@ -122,6 +122,30 @@ body {
 .dark .glass {
   background: rgba(28, 15, 12, 0.85);
   border: 1px solid rgba(253, 251, 247, 0.08);
+}
+
+/* Fix hardcoded bg-white containers and form inputs in dark mode */
+.dark .bg-white {
+  background-color: hsl(20 35% 14%) !important;
+  color: hsl(30 20% 98%) !important;
+}
+
+.dark .bg-background {
+  background-color: hsl(20 35% 10%) !important;
+  color: hsl(30 20% 98%) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: hsl(20 35% 16%) !important;
+  color: hsl(30 20% 98%) !important;
+  border-color: rgba(253, 251, 247, 0.15) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(253, 251, 247, 0.45) !important;
 }
 
 /* ====== Marquee Animations ====== */
