@@ -89,6 +89,31 @@ export async function writeTable<T>(tableName: string, data: T[]): Promise<boole
  * Reads global settings object.
  */
 export async function readSettings<T>(): Promise<T> {
+  const defaultSettings: any = {
+    storeName: "Whisk Fantasies Boutique",
+    announcementText: "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
+    qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
+    bankName: "Reserve Bank of Mumbai",
+    accountName: "Whisk Fantasies Mumbai",
+    accountNumber: "8424-0168-7697-8890",
+    ifscCode: "IFSC-WHISK0008424",
+    whatsappNumber: "+918424016876",
+    whatsappDefaultMsg: "Hi Whisk Fantasies! I would like to order a custom cake.",
+    groqApiKey: "",
+    systemPrompt: "You are Whisk AI, a virtual assistant for Whisk Fantasies bakery...",
+    aiRules: [
+      { keywords: ["eggless", "vegan"], response: "Yes! All our cakes can be prepared 100% eggless." },
+      { keywords: ["custom", "photo"], response: "We accept custom cakes! Send your reference photo on WhatsApp." }
+    ],
+    activeOffer: {
+      text: "🎉 Flash Celebration Offer: Flat 15% Off all confections!",
+      discountPercentage: 15,
+      durationHours: 2,
+      isActive: true,
+      startedAt: new Date().toISOString(),
+    }
+  };
+
   if (isSupabaseConfigured()) {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.1&select=*`, {
@@ -100,7 +125,7 @@ export async function readSettings<T>(): Promise<T> {
       });
       if (res.ok) {
         const rows = await res.json();
-        if (rows && rows.length > 0) return rows[0] as T;
+        if (rows && rows.length > 0) return { ...defaultSettings, ...rows[0] } as T;
       }
     } catch (err) {
       console.error("Supabase read settings error:", err);
@@ -110,10 +135,11 @@ export async function readSettings<T>(): Promise<T> {
   try {
     const filePath = path.join(MOCK_DATA_DIR, "settings.json");
     const data = await fs.readFile(filePath, "utf-8");
-    return JSON.parse(data) as T;
+    const parsed = JSON.parse(data);
+    return { ...defaultSettings, ...parsed } as T;
   } catch (error) {
     console.error("Error reading settings", error);
-    return {} as T;
+    return defaultSettings as T;
   }
 }
 

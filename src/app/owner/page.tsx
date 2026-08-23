@@ -10,6 +10,32 @@ import {
 import { Product } from "@/mock-data/products";
 import { cn } from "@/utils/cn";
 
+const DEFAULT_SETTINGS = {
+  storeName: "Whisk Fantasies Boutique",
+  websiteName: "Whisk Fantasies",
+  announcementText: "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
+  qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
+  bankName: "Reserve Bank of Mumbai",
+  accountName: "Whisk Fantasies Mumbai",
+  accountNumber: "8424-0168-7697-8890",
+  ifscCode: "IFSC-WHISK0008424",
+  whatsappNumber: "+918424016876",
+  whatsappDefaultMessage: "Hi Whisk Fantasies, I would like to design a customized eggless cake in Mumbai!",
+  groqApiKey: "",
+  aiShopContext: "You are Whisk AI, a virtual assistant for Whisk Fantasies bakery...",
+  aiRules: [
+    { keywords: ["eggless", "vegan"], response: "Yes! All our signature cakes can be prepared 100% eggless upon request." },
+    { keywords: ["custom", "photo"], response: "We love custom orders! Share your design idea on WhatsApp at +91 8424016876." }
+  ],
+  activeOffer: {
+    text: "🎉 Flash Celebration Offer: Flat 15% Off all confections!",
+    discountPercentage: 15,
+    durationHours: 2,
+    isActive: true,
+    startedAt: new Date().toISOString(),
+  }
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [session, setSession] = useState<any>(null);
@@ -29,7 +55,7 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState<any[]>([]);
   const [banners, setBanners] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(DEFAULT_SETTINGS);
   const [deliveryZones, setDeliveryZones] = useState<any[]>([]);
 
   // Delivery Zone CRUD states
@@ -1024,7 +1050,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 4. Offers Tab configuration */}
-        {activeTab === "Offers Manager" && settings && settings.activeOffer && (
+        {activeTab === "Offers Manager" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
             <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Limited-Time Flash Offer</h3>
             <form onSubmit={handleOfferToggleSubmit} className="space-y-4 text-xs max-w-md">
@@ -1667,7 +1693,7 @@ export default function AdminDashboard() {
 
 
         {/* 11. Payment Settings tab */}
-        {activeTab === "Payment Settings" && settings && (
+        {activeTab === "Payment Settings" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
             <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">UPI Merchant Bank details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs max-w-2xl">
@@ -1752,7 +1778,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 12. WhatsApp Settings */}
-        {activeTab === "WhatsApp Rules" && settings && (
+        {activeTab === "WhatsApp Rules" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
             <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">WhatsApp Hook configuration</h3>
             <div className="text-xs space-y-4 max-w-md">
@@ -1792,7 +1818,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 13. Website config settings */}
-        {activeTab === "Website config" && settings && (
+        {activeTab === "Website config" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
             <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Metadata settings</h3>
             <div className="text-xs space-y-4 max-w-md">
@@ -1823,7 +1849,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 14. AI Chatbot knowledge rule settings */}
-        {activeTab === "AI Chatbot rules" && settings && (
+        {activeTab === "AI Chatbot rules" && (
           <div className="space-y-8">
             {/* Groq Credentials & Context Textarea */}
             <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
