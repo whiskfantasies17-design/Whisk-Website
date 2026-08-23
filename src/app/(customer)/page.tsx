@@ -13,18 +13,21 @@ import { ReviewsMarquee } from "@/components/customer/ReviewsMarquee";
 export default function HomePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const fetchHomeDetails = async () => {
     try {
       const pRes = await fetch("/api/products");
       const pData = await pRes.json();
-      if (pRes.ok) setProducts(pData.products);
+      if (pRes.ok) setProducts(pData.products || []);
 
       const cRes = await fetch("/api/categories");
       const cData = await cRes.json();
-      if (cRes.ok) setCategories(cData.categories);
+      if (cRes.ok) setCategories(cData.categories || []);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoaded(true);
     }
   };
 
@@ -32,9 +35,11 @@ export default function HomePage() {
     fetchHomeDetails();
   }, []);
 
-  const activeProducts = products.length > 0 ? products : MOCK_PRODUCTS;
-  const activeCategories = categories.length > 0 ? categories : MOCK_CATEGORIES;
-  const signatureCakes = activeProducts.filter((p: any) => p.isSignature).slice(0, 8);
+  const activeProducts = loaded ? products : MOCK_PRODUCTS;
+  const activeCategories = loaded ? categories : MOCK_CATEGORIES;
+  const signatureCakes = activeProducts.filter((p: any) => p.isSignature).length > 0
+    ? activeProducts.filter((p: any) => p.isSignature).slice(0, 8)
+    : activeProducts.slice(0, 8);
 
   const customCakeProcess = [
     { step: "1", title: "Share your idea", desc: "Send us a picture, sketch, theme, or description of your dream cake." },

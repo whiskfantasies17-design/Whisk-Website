@@ -89,7 +89,20 @@ function CakesContent() {
     router.push("/cakes");
   };
 
-  const categories = [
+  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.categories && data.categories.length > 0) {
+          setDynamicCategories(data.categories.map((c: any) => c.name));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const categories = dynamicCategories.length > 0 ? dynamicCategories : [
     "Birthday Cakes",
     "Anniversary Cakes",
     "Wedding Cakes",
@@ -98,11 +111,7 @@ function CakesContent() {
     "Healthy Cakes",
     "Brownies",
     "Cupcakes",
-    "Cake Jars",
-    "Cookies",
-    "Donuts",
     "Tea Cakes",
-    "Mini Tarts",
     "Custom Cakes"
   ];
 
