@@ -24,11 +24,11 @@ export const CartDrawer: React.FC = () => {
   const [couponCode, setCouponCode] = useState("");
   const [couponStatus, setCouponStatus] = useState<"idle" | "success" | "error">("idle");
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCode.trim()) return;
 
-    const success = applyCoupon(couponCode);
+    const success = await applyCoupon(couponCode);
     if (success) {
       setCouponStatus("success");
       setCouponCode("");

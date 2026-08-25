@@ -4,23 +4,28 @@ import { readSettings } from "@/services/db";
 export async function POST(request: Request) {
   try {
     const { message } = await request.json();
-    if (!message) {
-      return NextResponse.json({ error: "Missing message query" }, { status: 400 });
+    if (!message || typeof message !== "string" || !message.trim()) {
+      return NextResponse.json({ error: "Missing or invalid message query" }, { status: 400 });
     }
 
+    const cleanMessage = message.trim().slice(0, 500); // Truncate very long messages to prevent API abuse
+
     const settings = await readSettings<any>();
-    const groqApiKey = settings?.groqApiKey || "";
+    const groqApiKey = (process.env.GROQ_API_KEY || settings?.groqApiKey || "").trim();
     const aiShopContext = settings?.aiShopContext || settings?.systemPrompt || "";
     const aiRules = settings?.aiRules || [];
 
     // 1. Try Groq API if key is available
-    if (groqApiKey.trim()) {
+    if (groqApiKey) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${groqApiKey.trim()}`,
+            "Authorization": `Bearer ${groqApiKey}`,
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
@@ -31,13 +36,16 @@ export async function POST(request: Request) {
               },
               {
                 role: "user",
-                content: message
+                content: cleanMessage
               }
             ],
             temperature: 0.5,
             max_tokens: 250
           }),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -51,12 +59,12 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Fallback to keyword matching if Groq is not configured or fails
-    const query = message.toLowerCase();
+    // 2. Fallback to keyword matching if Groq is not configured, times out, or fails
+    const query = cleanMessage.toLowerCase();
     let matchedResponse = "";
 
     for (const rule of aiRules) {
-      const hasKeyword = rule.keywords.some((keyword: string) => query.includes(keyword));
+      const hasKeyword = rule.keywords.some((keyword: string) => query.includes(keyword.toLowerCase()));
       if (hasKeyword) {
         matchedResponse = rule.response;
         break;
@@ -69,6 +77,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply: fallbackReply });
 
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: e.message || "Failed to process chat query" }, { status: 500 });
   }
 }
+

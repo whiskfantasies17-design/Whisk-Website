@@ -23,15 +23,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
 
     // Admin overwrite — used for single review deletion from admin panel
     if (body._overwrite !== undefined && Array.isArray(body._overwrite)) {
-      if (session.role !== "admin" && session.role !== "super-admin") {
+      if (!session || (session.role !== "admin" && session.role !== "super-admin")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
       }
       await writeTable("reviews", body._overwrite);
@@ -40,6 +36,10 @@ export async function POST(request: Request) {
 
     const reviews = await readTable<any>("reviews");
     const { productId, rating, review, orderId } = body;
+
+    if (!productId || !review) {
+      return NextResponse.json({ error: "Missing required review fields" }, { status: 400 });
+    }
 
     // Prevent duplicate reviews per order
     const alreadyReviewed = reviews.some((r: any) => r.orderId && r.orderId === orderId);
@@ -51,9 +51,9 @@ export async function POST(request: Request) {
       id: `review-${Date.now()}`,
       orderId: orderId || null,
       productId,
-      userName: session.name,
-      userId: session.id,
-      rating: Number(rating),
+      userName: session?.name || "Verified Customer",
+      userId: session?.id || "guest",
+      rating: Math.min(5, Math.max(1, Number(rating) || 5)),
       review,
       date: new Date().toISOString()
     };

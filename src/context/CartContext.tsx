@@ -30,7 +30,7 @@ interface CartContextType {
   cartSubtotal: number;
   shippingFee: number;
   appliedCoupon: Coupon | null;
-  applyCoupon: (code: string) => boolean;
+  applyCoupon: (code: string) => Promise<boolean>;
   removeCoupon: () => void;
   cartTotal: number;
 }
@@ -134,12 +134,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAppliedCoupon(null);
   };
 
-  const applyCoupon = (code: string): boolean => {
-    const coupon = AVAILABLE_COUPONS.find(
-      (c) => c.code.toUpperCase() === code.trim().toUpperCase()
+  const applyCoupon = async (code: string): Promise<boolean> => {
+    const normalizedCode = code.trim().toUpperCase();
+    if (!normalizedCode) return false;
+
+    // 1. Fetch dynamic coupons from backend API
+    try {
+      const res = await fetch("/api/coupons", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const serverCoupons = data.coupons || [];
+        const matched = serverCoupons.find(
+          (c: any) => (c.code || "").trim().toUpperCase() === normalizedCode
+        );
+        if (matched) {
+          setAppliedCoupon({
+            code: matched.code,
+            discountPercentage: Number(matched.discountPercentage || matched.discount || 10),
+          });
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Error checking server coupons", e);
+    }
+
+    // 2. Fallback check built-in coupons
+    const fallbackCoupon = AVAILABLE_COUPONS.find(
+      (c) => c.code.toUpperCase() === normalizedCode
     );
-    if (coupon) {
-      setAppliedCoupon(coupon);
+    if (fallbackCoupon) {
+      setAppliedCoupon(fallbackCoupon);
       return true;
     }
     return false;

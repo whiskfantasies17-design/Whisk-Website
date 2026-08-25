@@ -1,15 +1,24 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
   async rewrites() {
+    if (!BACKEND_URL) return [];
     return [
       {
         source: "/api/:path*",
@@ -20,3 +29,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
