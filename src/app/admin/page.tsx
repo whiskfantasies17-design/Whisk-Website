@@ -3,18 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard, ShoppingBag, FolderHeart, LayoutTemplate, Image, Sparkles, ShoppingCart,
-  Users, MessageSquare, Ticket, Map, Landmark, MessageSquareText, Globe, BrainCircuit,
-  TrendingUp, UserCheck, LogOut, Loader2, Plus, Edit, Trash2, CheckCircle2, ShieldCheck, Check, Eye, Star, UploadCloud, Clock
+  LayoutDashboard, ShoppingBag, FolderHeart, Clock, Ticket, Map, Landmark,
+  MessageSquareText, BrainCircuit, UserCheck, LogOut, Loader2, Plus, Edit, Trash2, UploadCloud
 } from "lucide-react";
 import { Product } from "@/mock-data/products";
 import { cn } from "@/utils/cn";
 
 const DEFAULT_SETTINGS = {
   storeName: "Whisk Fantasies",
-  websiteName: "Whisk Fantasies",
-  announcementText: "✨ Free Delivery on all Orders above ₹999 across Mumbai & Thane! ✨",
-  qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=whiskfantasies@upi&pn=Whisk%20Fantasies",
   bankName: "Reserve Bank of Mumbai",
   accountName: "Whisk Fantasies Mumbai",
   accountNumber: "8424-0168-7697-8890",
@@ -22,7 +18,7 @@ const DEFAULT_SETTINGS = {
   whatsappNumber: "+918424016876",
   whatsappDefaultMessage: "Hi Whisk Fantasies, I would like to design a customized eggless cake in Mumbai!",
   groqApiKey: "",
-  aiShopContext: "You are Whisk AI, a virtual assistant for Whisk Fantasies bakery...",
+  aiShopContext: "You are Whisk AI, a virtual assistant for Whisk Fantasies bakery in Vikhroli, Mumbai...",
   aiRules: [
     { keywords: ["eggless", "vegan"], response: "Yes! All our signature cakes can be prepared 100% eggless upon request." },
     { keywords: ["custom", "photo"], response: "We love custom orders! Share your design idea on WhatsApp at +91 8424016876." }
@@ -41,7 +37,6 @@ export default function AdminDashboard() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [orderSubTab, setOrderSubTab] = useState<"ongoing" | "past">("ongoing");
 
   // Admin Login Credentials
   const [adminEmail, setAdminEmail] = useState("");
@@ -51,12 +46,10 @@ export default function AdminDashboard() {
 
   // Shared state pools
   const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [banners, setBanners] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>(DEFAULT_SETTINGS);
   const [deliveryZones, setDeliveryZones] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(DEFAULT_SETTINGS);
 
   // Delivery Zone CRUD states
   const [zoneFormOpen, setZoneFormOpen] = useState(false);
@@ -66,7 +59,7 @@ export default function AdminDashboard() {
   const [zoneFee, setZoneFee] = useState(0);
   const [zoneDuration, setZoneDuration] = useState("");
 
-  // Form manipulation states
+  // Product CRUD states
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [pName, setPName] = useState("");
@@ -80,20 +73,11 @@ export default function AdminDashboard() {
   const [pCustomizable, setPCustomizable] = useState(false);
   const [pImage, setPImage] = useState("");
 
-  // Category addition & edit states
+  // Category CRUD states
   const [selectedCategoryItem, setSelectedCategoryItem] = useState<any | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [catName, setCatName] = useState("");
   const [catImage, setCatImage] = useState("");
-
-  // Banner CRUD states
-  const [selectedBannerItem, setSelectedBannerItem] = useState<any | null>(null);
-  const [bannerFormOpen, setBannerFormOpen] = useState(false);
-  const [bannerTitle, setBannerTitle] = useState("");
-  const [bannerSubtitle, setBannerSubtitle] = useState("");
-  const [bannerCtaText, setBannerCtaText] = useState("");
-  const [bannerCtaLink, setBannerCtaLink] = useState("");
-  const [bannerImage, setBannerImage] = useState("");
 
   // Coupon CRUD states
   const [selectedCouponItem, setSelectedCouponItem] = useState<any | null>(null);
@@ -104,9 +88,6 @@ export default function AdminDashboard() {
   // AI Knowledge rule addition
   const [aiKeyword, setAiKeyword] = useState("");
   const [aiResponse, setAiResponse] = useState("");
-
-  // Order inspector details modal
-  const [inspectingOrder, setInspectingOrder] = useState<any | null>(null);
 
   // Load Session and master databases
   const fetchAllData = async (activeUser?: any) => {
@@ -129,35 +110,31 @@ export default function AdminDashboard() {
       const pData = await pRes.json();
       if (pRes.ok) setProducts(pData.products || []);
 
-      // Fetch orders
-      const oRes = await fetch("/api/orders", { cache: "no-store" });
-      const oData = await oRes.json();
-      if (oRes.ok) setOrders(oData.orders || []);
-
       // Fetch categories
       const cRes = await fetch("/api/categories", { cache: "no-store" });
       const cData = await cRes.json();
       if (cRes.ok) setCategories(cData.categories || []);
-
-      // Fetch banners
-      const bRes = await fetch("/api/banners", { cache: "no-store" });
-      const bData = await bRes.json();
-      if (bRes.ok) setBanners(bData.banners || []);
 
       // Fetch coupons
       const cpRes = await fetch("/api/coupons", { cache: "no-store" });
       const cpData = await cpRes.json();
       if (cpRes.ok) setCoupons(cpData.coupons || []);
 
-      // Fetch settings
-      const stRes = await fetch("/api/settings", { cache: "no-store" });
-      const stData = await stRes.json();
-      if (stRes.ok) setSettings(stData.settings || DEFAULT_SETTINGS);
-
       // Fetch delivery zones
       const dzRes = await fetch("/api/delivery", { cache: "no-store" });
       const dzData = await dzRes.json();
       if (dzRes.ok) setDeliveryZones(dzData.zones || []);
+
+      // Fetch settings
+      const stRes = await fetch("/api/settings", { cache: "no-store" });
+      const stData = await stRes.json();
+      if (stRes.ok && stData.settings) {
+        setSettings({
+          ...DEFAULT_SETTINGS,
+          ...stData.settings,
+          activeOffer: { ...DEFAULT_SETTINGS.activeOffer, ...(stData.settings.activeOffer || {}) }
+        });
+      }
 
     } catch (e) {
       console.error(e);
@@ -225,18 +202,18 @@ export default function AdminDashboard() {
       setPName(product.name);
       setPPrice(product.price);
       setPCategory(product.category);
-      setPDescription(product.description);
-      setPOccasions(product.occasions.join(", "));
-      setPFlavors(product.flavors.join(", "));
-      setPSizes(product.sizes.join(", "));
-      setPSignature(product.isSignature);
-      setPCustomizable(product.isCustomizable);
-      setPImage(product.image);
+      setPDescription(product.description || "");
+      setPOccasions((product.occasions || []).join(", "));
+      setPFlavors((product.flavors || []).join(", "));
+      setPSizes((product.sizes || []).join(", "));
+      setPSignature(!!product.isSignature);
+      setPCustomizable(!!product.isCustomizable);
+      setPImage(product.image || "");
     } else {
       setSelectedProduct(null);
       setPName("");
       setPPrice(1200);
-      setPCategory("Chocolate Cakes");
+      setPCategory(categories.length > 0 ? categories[0].name : "Chocolate Cakes");
       setPDescription("");
       setPOccasions("Birthday, Anniversary");
       setPFlavors("Classic Vanilla, Belgian Chocolate");
@@ -254,7 +231,7 @@ export default function AdminDashboard() {
       id: selectedProduct?.id || `cake-${Date.now()}`,
       name: pName,
       price: Number(pPrice),
-      category: pCategory,
+      category: pCategory || (categories.length > 0 ? categories[0].name : "Custom Cakes"),
       description: pDescription,
       occasions: pOccasions.split(",").map((s) => s.trim()).filter(Boolean),
       flavors: pFlavors.split(",").map((s) => s.trim()).filter(Boolean),
@@ -282,7 +259,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this confectionery design?")) return;
+    if (!confirm("Are you sure you want to remove this product?")) return;
     try {
       const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
       if (res.ok) {
@@ -291,48 +268,12 @@ export default function AdminDashboard() {
     } catch (e) {}
   };
 
-  // 2. ORDER VERIFICATION WORKSPACE ACTIONS
-  const handleVerifyOrderPayment = async (orderId: string) => {
-    try {
-      const res = await fetch("/api/orders", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId,
-          paymentStatus: "Verified",
-          deliveryStatus: "Confirmed",
-        }),
-      });
-      if (res.ok) {
-        setInspectingOrder(null);
-        fetchAllData();
-      }
-    } catch (e) {}
-  };
-
-  const handleUpdateDeliveryStep = async (orderId: string, step: string) => {
-    try {
-      const res = await fetch("/api/orders", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId,
-          deliveryStatus: step,
-        }),
-      });
-      if (res.ok) {
-        setInspectingOrder(null);
-        fetchAllData();
-      }
-    } catch (e) {}
-  };
-
-  // 3. CATEGORIES CRUD ACTIONS
+  // 2. CATEGORIES CRUD ACTIONS
   const openCategoryForm = (item?: any) => {
     if (item) {
       setSelectedCategoryItem(item);
       setCatName(item.name);
-      setCatImage(item.image);
+      setCatImage(item.image || "");
     } else {
       setSelectedCategoryItem(null);
       setCatName("");
@@ -353,12 +294,10 @@ export default function AdminDashboard() {
     };
 
     if (selectedCategoryItem) {
-      // Update existing
       updatedList = updatedList.map((c) =>
         c.name === selectedCategoryItem.name ? categoryPayload : c
       );
     } else {
-      // Create new
       updatedList.push(categoryPayload);
     }
 
@@ -388,73 +327,34 @@ export default function AdminDashboard() {
     } catch (e) {}
   };
 
-  // 4. HERO BANNER CRUD ACTIONS
-  const openBannerForm = (item?: any) => {
-    if (item) {
-      setSelectedBannerItem(item);
-      setBannerTitle(item.title);
-      setBannerSubtitle(item.subtitle);
-      setBannerCtaText(item.ctaText);
-      setBannerCtaLink(item.ctaLink);
-      setBannerImage(item.image);
-    } else {
-      setSelectedBannerItem(null);
-      setBannerTitle("");
-      setBannerSubtitle("");
-      setBannerCtaText("Order Now");
-      setBannerCtaLink("/cakes");
-      setBannerImage("https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1600&q=80");
-    }
-    setBannerFormOpen(true);
-  };
-
-  const handleBannerSubmit = async (e: React.FormEvent) => {
+  // 3. FLASH SALES ACTIONS
+  const handleOfferToggleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let updatedList = [...banners];
-    const bannerPayload = {
-      id: selectedBannerItem ? selectedBannerItem.id : Date.now(),
-      title: bannerTitle,
-      subtitle: bannerSubtitle,
-      ctaText: bannerCtaText,
-      ctaLink: bannerCtaLink,
-      image: bannerImage
+    if (!settings || !settings.activeOffer) return;
+
+    const offerData = settings.activeOffer;
+    const updatedSettings = {
+      ...settings,
+      activeOffer: {
+        ...offerData,
+        startedAt: offerData.isActive ? new Date().toISOString() : ""
+      }
     };
 
-    if (selectedBannerItem) {
-      updatedList = updatedList.map((b) =>
-        b.id === selectedBannerItem.id ? bannerPayload : b
-      );
-    } else {
-      updatedList.push(bannerPayload);
-    }
-
     try {
-      const res = await fetch("/api/banners", {
+      const res = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedList)
+        body: JSON.stringify(updatedSettings)
       });
       if (res.ok) {
-        setBannerFormOpen(false);
+        alert("Flash Sales offer updated successfully!");
         fetchAllData();
       }
     } catch (e) {}
   };
 
-  const handleDeleteBanner = async (idToDelete: number) => {
-    if (!confirm("Are you sure you want to remove this banner slide?")) return;
-    const updatedList = banners.filter((b) => b.id !== idToDelete);
-    try {
-      const res = await fetch("/api/banners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedList)
-      });
-      if (res.ok) fetchAllData();
-    } catch (e) {}
-  };
-
-  // 5. COUPON CRUD ACTIONS
+  // 4. COUPON CRUD ACTIONS
   const openCouponForm = (item?: any) => {
     if (item) {
       setSelectedCouponItem(item);
@@ -513,34 +413,23 @@ export default function AdminDashboard() {
     } catch (e) {}
   };
 
-  // 6. OFFERS WIDGET SUBMISSION
-  const handleOfferToggleSubmit = async (e: React.FormEvent) => {
+  // 5. WHATSAPP MESSAGING ACTIONS
+  const handleWhatsAppSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!settings || !settings.activeOffer) return;
-
-    const offerData = settings.activeOffer;
-    const updatedSettings = {
-      ...settings,
-      activeOffer: {
-        ...offerData,
-        startedAt: offerData.isActive ? new Date().toISOString() : ""
-      }
-    };
-
     try {
       const res = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedSettings)
+        body: JSON.stringify(settings)
       });
       if (res.ok) {
-        alert("Offers configured successfully!");
+        alert("WhatsApp messaging options saved successfully!");
         fetchAllData();
       }
     } catch (e) {}
   };
 
-  // 7. AI KNOWLEDGE BASE RULES
+  // 6. AI CHATBOT RULES ACTIONS
   const handleAddAiRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiKeyword || !aiResponse || !settings) return;
@@ -564,7 +453,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteAiRule = async (idxToDelete: number) => {
-    if (!confirm("Remove this chatbot knowledge rule?")) return;
+    if (!confirm("Remove this chatbot rule?")) return;
     const updatedRules = (settings.aiRules || []).filter((_: any, i: number) => i !== idxToDelete);
     const updatedSettings = { ...settings, aiRules: updatedRules };
     try {
@@ -580,25 +469,15 @@ export default function AdminDashboard() {
   // Sidebar Menu mapping
   const adminMenu = [
     { name: "Dashboard", icon: LayoutDashboard },
-    { name: "Products", icon: ShoppingBag },
     { name: "Categories", icon: FolderHeart },
-    { name: "Offers Manager", icon: Clock },
-    { name: "Hero Banners", icon: Image },
-    { name: "Orders list", icon: ShoppingCart },
-    { name: "Customers base", icon: Users },
-    { name: "Reviews base", icon: MessageSquare },
-    { name: "Coupons list", icon: Ticket },
+    { name: "Products", icon: ShoppingBag },
+    { name: "Flash Sales", icon: Clock },
+    { name: "Coupon Manager", icon: Ticket },
     { name: "Delivery Zones", icon: Map },
-    { name: "Payment Settings", icon: Landmark },
-    { name: "WhatsApp Rules", icon: MessageSquareText },
-    { name: "Website config", icon: Globe },
-    { name: "AI Chatbot rules", icon: BrainCircuit },
-    { name: "Analytics view", icon: TrendingUp },
+    { name: "Bank IFSC Details", icon: Landmark },
+    { name: "WhatsApp Messaging", icon: MessageSquareText },
+    { name: "Chatbot Rules", icon: BrainCircuit },
   ];
-
-  // Dashboard Stats calculations
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.paymentStatus === "Verified" ? o.total : 0), 0);
-  const totalQuantityCakes = orders.reduce((sum, o) => sum + o.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0), 0);
 
   if (loading) {
     return (
@@ -614,13 +493,13 @@ export default function AdminDashboard() {
         <div className="w-full max-w-md bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
             <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
-              Bespoke Administration
+              Admin Portal
             </span>
             <h1 className="font-serif text-3xl font-bold tracking-wider">
               WHISK ADMIN
             </h1>
             <p className="text-xs text-white/60">
-              Please enter your administrator credentials to manage parameters.
+              Enter your administrator credentials to access management options.
             </p>
           </div>
 
@@ -687,7 +566,7 @@ export default function AdminDashboard() {
             </span>
           </div>
           
-          <nav className="flex flex-col gap-1 max-h-[70vh] overflow-y-auto pr-1">
+          <nav className="flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto pr-1">
             {adminMenu.map((menu) => (
               <button
                 key={menu.name}
@@ -695,7 +574,7 @@ export default function AdminDashboard() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all text-left cursor-pointer",
                   activeTab === menu.name
-                    ? "bg-accent text-white shadow-md shadow-accent/20"
+                    ? "bg-accent text-white shadow-md shadow-accent/20 font-bold"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
@@ -707,7 +586,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="space-y-4 border-t border-white/10 pt-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-white/50">
+          <div className="flex items-center gap-2 text-xs font-bold text-white/60">
             <UserCheck size={14} /> {session?.name}
           </div>
           <button
@@ -725,64 +604,172 @@ export default function AdminDashboard() {
         <div className="border-b border-primary/5 pb-5 mb-8 flex justify-between items-center">
           <div>
             <h1 className="font-serif text-2xl sm:text-3xl font-bold">{activeTab}</h1>
-            <p className="text-xs text-primary/50 mt-1">Management dashboard for Whisk Fantasies parameters.</p>
+            <p className="text-xs text-primary/50 mt-1">Admin control panel for Whisk Fantasies operations.</p>
           </div>
         </div>
 
-        {/* 1. Dashboard Stats workspace */}
+        {/* 1. Dashboard Overview */}
         {activeTab === "Dashboard" && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Gross Revenue</span>
-                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">₹{totalRevenue}</h3>
-                <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Verified payments only</span>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-1">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Categories</span>
+                <h3 className="font-serif text-3xl font-bold text-primary">{categories.length}</h3>
+                <span className="text-[10px] text-accent font-semibold block">Active collections</span>
               </div>
-              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Total Order Volume</span>
-                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">{orders.length} orders</h3>
-                <span className="text-[10px] text-accent font-semibold block mt-1">Active requests on file</span>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-1">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Products</span>
+                <h3 className="font-serif text-3xl font-bold text-primary">{products.length}</h3>
+                <span className="text-[10px] text-emerald-600 font-semibold block">Catalog items</span>
               </div>
-              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Confectionery Items sold</span>
-                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">{totalQuantityCakes} cakes</h3>
-                <span className="text-[10px] text-primary/60 block mt-1">Freshly baked details</span>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-1">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Active Coupons</span>
+                <h3 className="font-serif text-3xl font-bold text-primary">{coupons.length}</h3>
+                <span className="text-[10px] text-primary/60 block">Discount codes</span>
               </div>
-              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm">
-                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Registered Users</span>
-                <h3 className="font-serif text-2xl font-bold mt-1 text-primary">8 registered</h3>
-                <span className="text-[10px] text-primary/60 block mt-1">Mock account pool</span>
+              <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-1">
+                <span className="text-[10px] font-bold text-primary/45 uppercase tracking-wide">Delivery Zones</span>
+                <h3 className="font-serif text-3xl font-bold text-primary">{deliveryZones.length}</h3>
+                <span className="text-[10px] text-primary/60 block">Configured zones</span>
               </div>
             </div>
 
+            {/* Quick Actions */}
             <div className="bg-white border border-primary/5 p-6 rounded-3xl shadow-sm space-y-4">
-              <h3 className="font-serif text-lg font-bold text-primary">Recent Order Requests</h3>
+              <h3 className="font-serif text-lg font-bold text-primary">Management Tools</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button
+                  onClick={() => setActiveTab("Categories")}
+                  className="p-5 rounded-2xl border border-primary/10 hover:border-accent hover:bg-secondary/15 transition-all text-left space-y-2 cursor-pointer"
+                >
+                  <FolderHeart className="text-accent" size={24} />
+                  <h4 className="font-bold text-sm">Categories CRUD</h4>
+                  <p className="text-xs text-primary/60">Create, edit, or delete store categories.</p>
+                </button>
+                <button
+                  onClick={() => setActiveTab("Products")}
+                  className="p-5 rounded-2xl border border-primary/10 hover:border-accent hover:bg-secondary/15 transition-all text-left space-y-2 cursor-pointer"
+                >
+                  <ShoppingBag className="text-accent" size={24} />
+                  <h4 className="font-bold text-sm">Products CRUD</h4>
+                  <p className="text-xs text-primary/60">Add, edit pricing, images, and cake options.</p>
+                </button>
+                <button
+                  onClick={() => setActiveTab("Coupon Manager")}
+                  className="p-5 rounded-2xl border border-primary/10 hover:border-accent hover:bg-secondary/15 transition-all text-left space-y-2 cursor-pointer"
+                >
+                  <Ticket className="text-accent" size={24} />
+                  <h4 className="font-bold text-sm">Coupon Manager</h4>
+                  <p className="text-xs text-primary/60">Manage promo codes and discount offers.</p>
+                </button>
+                <button
+                  onClick={() => setActiveTab("Delivery Zones")}
+                  className="p-5 rounded-2xl border border-primary/10 hover:border-accent hover:bg-secondary/15 transition-all text-left space-y-2 cursor-pointer"
+                >
+                  <Map className="text-accent" size={24} />
+                  <h4 className="font-bold text-sm">Delivery Zones</h4>
+                  <p className="text-xs text-primary/60">Set pincodes and custom delivery fees.</p>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. Categories CRUD */}
+        {activeTab === "Categories" && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-primary">Store Categories</h3>
+                <p className="text-xs text-primary/50 mt-1">Manage categories displayed on the website.</p>
+              </div>
+              <button
+                onClick={() => openCategoryForm()}
+                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
+              >
+                <Plus size={16} /> Add Category
+              </button>
+            </div>
+
+            {/* Category Form Modal */}
+            {categoryFormOpen && (
+              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-md space-y-6">
+                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
+                    {selectedCategoryItem ? "Edit Category" : "Add Category"}
+                  </h2>
+                  <form onSubmit={handleCategorySubmit} className="space-y-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Category Name</label>
+                      <input type="text" required value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="E.g., Number Cakes" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-bold text-primary/60 uppercase">Category Cover Image</label>
+                      <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
+                        <span className="text-[10px] text-primary/50 truncate max-w-[250px]">
+                          {catImage ? "Image loaded" : "Upload Cover Image..."}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChangeHelper(e, setCatImage)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <UploadCloud size={14} className="text-primary/50" />
+                      </div>
+                    </div>
+
+                    {catImage && (
+                      <div className="h-20 w-32 overflow-hidden rounded-xl border border-primary/5 bg-secondary/15">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={catImage} alt="Category preview" className="h-full w-full object-cover" />
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setCategoryFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary cursor-pointer">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95 cursor-pointer">Save Category</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
-                      <th className="pb-3">Order ID</th>
-                      <th className="pb-3">Customer</th>
-                      <th className="pb-3">Total</th>
-                      <th className="pb-3">Payment status</th>
-                      <th className="pb-3">Delivery status</th>
+                      <th className="pb-3">Image</th>
+                      <th className="pb-3">Category Title</th>
+                      <th className="pb-3">Slug</th>
+                      <th className="pb-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.slice(0, 5).map((order) => (
-                      <tr key={order.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                        <td className="py-4 font-mono font-bold text-accent">{order.id}</td>
-                        <td className="py-4 font-semibold">{order.userName}</td>
-                        <td className="py-4 font-semibold">₹{order.total}</td>
-                        <td className="py-4">
-                          <span className={cn(
-                            "px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px]",
-                            order.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                          )}>
-                            {order.paymentStatus}
-                          </span>
+                    {categories.map((c) => (
+                      <tr key={c.name} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
+                        <td className="py-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={c.image} alt={c.name} className="h-10 w-16 object-cover rounded-lg border border-primary/5" />
                         </td>
-                        <td className="py-4 font-semibold">{order.deliveryStatus}</td>
+                        <td className="py-3 font-semibold text-primary">{c.name}</td>
+                        <td className="py-3 font-mono text-accent">{c.slug}</td>
+                        <td className="py-3 text-right space-x-1">
+                          <button
+                            onClick={() => openCategoryForm(c)}
+                            className="p-1.5 text-primary/50 hover:text-accent transition-colors cursor-pointer"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(c.name)}
+                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -792,10 +779,14 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 2. Products Manager workspace */}
+        {/* 3. Products CRUD */}
         {activeTab === "Products" && (
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-primary">Products Catalog</h3>
+                <p className="text-xs text-primary/50 mt-1">Create, edit, or remove products in your bakery store.</p>
+              </div>
               <button
                 onClick={() => openProductForm()}
                 className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
@@ -809,7 +800,7 @@ export default function AdminDashboard() {
               <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
                 <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-6">
                   <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
-                    {selectedProduct ? "Edit Confectionery" : "Create Confectionery"}
+                    {selectedProduct ? "Edit Product" : "Create Product"}
                   </h2>
                   <form onSubmit={handleProductSubmit} className="space-y-4 text-xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -837,7 +828,7 @@ export default function AdminDashboard() {
                         <label className="font-bold text-primary/60 uppercase">Upload Cake Image</label>
                         <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
                           <span className="text-[10px] text-primary/50 truncate max-w-[200px]">
-                            {pImage ? "Image loaded (base64)" : "Select file..."}
+                            {pImage ? "Image loaded" : "Select file..."}
                           </span>
                           <input
                             type="file"
@@ -892,8 +883,8 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
-                      <button type="button" onClick={() => setProductFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2.5 font-bold hover:bg-secondary">Cancel</button>
-                      <button type="submit" className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95">Save Product</button>
+                      <button type="button" onClick={() => setProductFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2.5 font-bold hover:bg-secondary cursor-pointer">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 cursor-pointer">Save Product</button>
                     </div>
                   </form>
                 </div>
@@ -929,13 +920,13 @@ export default function AdminDashboard() {
                         <td className="py-4 text-right space-x-1">
                           <button
                             onClick={() => openProductForm(p)}
-                            className="p-2 text-primary/50 hover:text-accent transition-colors"
+                            className="p-2 text-primary/50 hover:text-accent transition-colors cursor-pointer"
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
-                            className="p-2 text-primary/50 hover:text-destructive transition-colors"
+                            className="p-2 text-primary/50 hover:text-destructive transition-colors cursor-pointer"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -949,117 +940,20 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 3. Categories manager workspace */}
-        {activeTab === "Categories" && (
-          <div className="space-y-6">
-            <div className="flex justify-end">
-              <button
-                onClick={() => openCategoryForm()}
-                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
-              >
-                <Plus size={16} /> Add Category
-              </button>
-            </div>
-
-            {/* Category Form modal */}
-            {categoryFormOpen && (
-              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-md space-y-6">
-                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
-                    {selectedCategoryItem ? "Edit Category" : "Add Category"}
-                  </h2>
-                  <form onSubmit={handleCategorySubmit} className="space-y-4 text-xs">
-                    <div className="space-y-1">
-                      <label className="font-bold text-primary/60 uppercase">Category Title</label>
-                      <input type="text" required value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="E.g., Number Cakes" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-bold text-primary/60 uppercase">Category Image File</label>
-                      <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
-                        <span className="text-[10px] text-primary/50 truncate max-w-[250px]">
-                          {catImage ? "Image loaded (base64)" : "Upload Cover Image..."}
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileChangeHelper(e, setCatImage)}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        />
-                        <UploadCloud size={14} className="text-primary/50" />
-                      </div>
-                    </div>
-
-                    {catImage && (
-                      <div className="h-20 w-32 overflow-hidden rounded-xl border border-primary/5 bg-secondary/15">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={catImage} alt="Category preview" className="h-full w-full object-cover" />
-                      </div>
-                    )}
-
-                    <div className="flex justify-end gap-2 pt-2">
-                      <button type="button" onClick={() => setCategoryFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
-                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Category</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
-                      <th className="pb-3">Cover Image</th>
-                      <th className="pb-3">Category Title</th>
-                      <th className="pb-3">Slug</th>
-                      <th className="pb-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((c) => (
-                      <tr key={c.name} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                        <td className="py-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={c.image} alt={c.name} className="h-10 w-16 object-cover rounded-lg border border-primary/5" />
-                        </td>
-                        <td className="py-3 font-semibold text-primary">{c.name}</td>
-                        <td className="py-3 font-mono text-accent">{c.slug}</td>
-                        <td className="py-3 text-right space-x-1">
-                          <button
-                            onClick={() => openCategoryForm(c)}
-                            className="p-1.5 text-primary/50 hover:text-accent transition-colors"
-                          >
-                            <Edit size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCategory(c.name)}
-                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. Offers Tab configuration */}
-        {activeTab === "Offers Manager" && (
+        {/* 4. Flash Sales CRUD */}
+        {activeTab === "Flash Sales" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Limited-Time Flash Offer</h3>
-            <form onSubmit={handleOfferToggleSubmit} className="space-y-4 text-xs max-w-md">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-primary">Flash Sales Configuration</h3>
+              <p className="text-xs text-primary/50 mt-1">Configure limited-time flash sale banners, discounts, and active timer.</p>
+            </div>
+            <form onSubmit={handleOfferToggleSubmit} className="space-y-4 text-xs max-w-md pt-2 border-t border-primary/5">
               <div className="space-y-1">
-                <label className="font-bold text-primary/60 uppercase">Offer Text / Headline</label>
+                <label className="font-bold text-primary/60 uppercase">Offer Text / Banner Headline</label>
                 <input
                   type="text"
                   required
-                  value={settings.activeOffer.text}
+                  value={settings.activeOffer?.text || ""}
                   onChange={(e) => setSettings({
                     ...settings,
                     activeOffer: { ...settings.activeOffer, text: e.target.value }
@@ -1070,11 +964,11 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="font-bold text-primary/60 uppercase">Discount Percentage (%)</label>
+                  <label className="font-bold text-primary/60 uppercase">Discount (%)</label>
                   <input
                     type="number"
                     required
-                    value={settings.activeOffer.discountPercentage}
+                    value={settings.activeOffer?.discountPercentage || 0}
                     onChange={(e) => setSettings({
                       ...settings,
                       activeOffer: { ...settings.activeOffer, discountPercentage: Number(e.target.value) }
@@ -1083,11 +977,11 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="font-bold text-primary/60 uppercase">Countdown Duration (Hours)</label>
+                  <label className="font-bold text-primary/60 uppercase">Duration (Hours)</label>
                   <input
                     type="number"
                     required
-                    value={settings.activeOffer.durationHours}
+                    value={settings.activeOffer?.durationHours || 2}
                     onChange={(e) => setSettings({
                       ...settings,
                       activeOffer: { ...settings.activeOffer, durationHours: Number(e.target.value) }
@@ -1101,358 +995,35 @@ export default function AdminDashboard() {
                 <label className="flex items-center gap-2 font-bold cursor-pointer text-sm">
                   <input
                     type="checkbox"
-                    checked={settings.activeOffer.isActive}
+                    checked={!!settings.activeOffer?.isActive}
                     onChange={(e) => setSettings({
                       ...settings,
                       activeOffer: { ...settings.activeOffer, isActive: e.target.checked }
                     })}
-                    className="rounded accent-accent h-5 w-5"
+                    className="rounded accent-accent h-5 w-5 cursor-pointer"
                   />
-                  Run Flash Offer Live
+                  Run Flash Sale Live
                 </label>
               </div>
 
               <button
                 type="submit"
-                className="rounded-full bg-primary text-white px-8 py-3 font-bold hover:bg-primary/95"
+                className="rounded-full bg-primary text-white px-8 py-3 font-bold hover:bg-primary/95 cursor-pointer shadow-md"
               >
-                Save & Update Offer
+                Save Flash Sale Settings
               </button>
             </form>
           </div>
         )}
 
-        {/* 5. Hero Banner Manager */}
-        {activeTab === "Hero Banners" && (
+        {/* 5. Coupon Manager */}
+        {activeTab === "Coupon Manager" && (
           <div className="space-y-6">
-            <div className="flex justify-end">
-              <button
-                onClick={() => openBannerForm()}
-                className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
-              >
-                <Plus size={16} /> Add Banner
-              </button>
-            </div>
-
-            {/* Banner form modal */}
-            {bannerFormOpen && (
-              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-5">
-                  <h2 className="font-serif text-lg font-bold text-primary border-b border-primary/5 pb-3">
-                    {selectedBannerItem ? "Edit Banner Slide" : "Add Banner Slide"}
-                  </h2>
-                  <form onSubmit={handleBannerSubmit} className="space-y-4 text-xs">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="font-bold text-primary/60 uppercase">Headline Title</label>
-                        <input type="text" required value={bannerTitle} onChange={(e) => setBannerTitle(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-bold text-primary/60 uppercase">CTA Label</label>
-                        <input type="text" required value={bannerCtaText} onChange={(e) => setBannerCtaText(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="font-bold text-primary/60 uppercase">Subtitle Description</label>
-                        <input type="text" required value={bannerSubtitle} onChange={(e) => setBannerSubtitle(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-bold text-primary/60 uppercase">CTA Redirect Link</label>
-                        <input type="text" required value={bannerCtaLink} onChange={(e) => setBannerCtaLink(e.target.value)} className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-bold text-primary/60 uppercase">Upload Banner Background</label>
-                      <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
-                        <span className="text-[10px] text-primary/50 truncate max-w-[300px]">
-                          {bannerImage ? "Image loaded (base64)" : "Select Slide Background..."}
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileChangeHelper(e, setBannerImage)}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        />
-                        <UploadCloud size={14} className="text-primary/50" />
-                      </div>
-                    </div>
-
-                    {bannerImage && (
-                      <div className="h-28 w-48 overflow-hidden rounded-xl border border-primary/5 bg-secondary/15">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={bannerImage} alt="Banner slide preview" className="h-full w-full object-cover" />
-                      </div>
-                    )}
-
-                    <div className="flex justify-end gap-2 pt-2">
-                      <button type="button" onClick={() => setBannerFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
-                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Slide</button>
-                    </div>
-                  </form>
-                </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-primary">Coupon Manager</h3>
+                <p className="text-xs text-primary/50 mt-1">Create and manage discount codes for checkout.</p>
               </div>
-            )}
-
-            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {banners.map((slide) => (
-                  <div key={slide.id} className="border border-primary/5 rounded-2xl overflow-hidden bg-background relative flex flex-col justify-between">
-                    <div className="aspect-[3/1] relative bg-secondary overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={slide.image} alt={slide.title} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <h4 className="font-serif font-bold text-sm text-primary">{slide.title}</h4>
-                      <p className="text-[10px] text-primary/60 leading-relaxed">{slide.subtitle}</p>
-                      <div className="flex justify-between items-center pt-2 border-t border-primary/5 text-[10px]">
-                        <span>Link: <span className="font-mono text-accent">{slide.ctaLink}</span></span>
-                        <div className="space-x-1">
-                          <button
-                            onClick={() => openBannerForm(slide)}
-                            className="bg-primary/5 hover:bg-accent hover:text-white transition-all rounded-full p-2 text-primary/50"
-                          >
-                            <Edit size={12} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteBanner(slide.id)}
-                            className="bg-primary/5 hover:bg-destructive hover:text-white transition-all rounded-full p-2 text-primary/50"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 6. Orders Inspection & Payment verification workspace — split Ongoing / Past */}
-        {activeTab === "Orders list" && (
-          <div className="space-y-6">
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setOrderSubTab("ongoing")}
-                className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
-                  orderSubTab === "ongoing" ? "bg-amber-500 text-white border-amber-500 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-amber-400"
-                )}
-              >
-                🟠 Ongoing Orders ({orders.filter((o: any) => o.deliveryStatus !== "Delivered").length})
-              </button>
-              <button
-                onClick={() => setOrderSubTab("past")}
-                className={cn("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer",
-                  orderSubTab === "past" ? "bg-emerald-600 text-white border-emerald-600 shadow" : "bg-white text-primary/70 border-primary/10 hover:border-emerald-400"
-                )}
-              >
-                ✅ Past Orders ({orders.filter((o: any) => o.deliveryStatus === "Delivered").length})
-              </button>
-            </div>
-
-            <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
-                      <th className="pb-3">Order ID</th>
-                      <th className="pb-3">Date</th>
-                      <th className="pb-3">Customer</th>
-                      <th className="pb-3">Total Amount</th>
-                      <th className="pb-3">Payment verification</th>
-                      <th className="pb-3">Delivery step</th>
-                      <th className="pb-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const displayOrders = orders.filter((o: any) =>
-                        orderSubTab === "ongoing" ? o.deliveryStatus !== "Delivered" : o.deliveryStatus === "Delivered"
-                      );
-                      if (displayOrders.length === 0) {
-                        return (
-                          <tr><td colSpan={7} className="py-10 text-center text-xs text-primary/40">
-                            {orderSubTab === "ongoing" ? "No ongoing orders." : "No delivered orders yet."}
-                          </td></tr>
-                        );
-                      }
-                      return displayOrders.map((o: any) => (
-                        <tr key={o.id} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                          <td className="py-4 font-mono font-bold text-accent">{o.id.slice(0, 15)}...</td>
-                          <td className="py-4 text-primary/60">{new Date(o.date).toLocaleDateString("en-IN")}</td>
-                          <td className="py-4 font-semibold">{o.userName}</td>
-                          <td className="py-4 font-bold">₹{o.total}</td>
-                          <td className="py-4">
-                            <span className={cn(
-                              "px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px]",
-                              o.paymentStatus === "Verified" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                            )}>
-                              {o.paymentStatus}
-                            </span>
-                          </td>
-                          <td className="py-4">
-                            <span className={cn(
-                              "font-semibold rounded-full px-2.5 py-0.5 text-[9px] uppercase",
-                              o.deliveryStatus === "Delivered" ? "bg-emerald-100 text-emerald-800"
-                              : o.deliveryStatus === "Out for Delivery" ? "bg-blue-100 text-blue-800"
-                              : o.deliveryStatus === "Preparing" ? "bg-orange-100 text-orange-800"
-                              : "bg-secondary/30 text-primary/75"
-                            )}>{o.deliveryStatus}</span>
-                          </td>
-                          <td className="py-4 text-right">
-                            <button
-                              onClick={() => setInspectingOrder(o)}
-                              className="rounded-full bg-secondary/80 hover:bg-primary hover:text-white px-3 py-1.5 font-bold transition-all flex items-center gap-1 text-[10px] ml-auto cursor-pointer"
-                            >
-                              <Eye size={12} /> Inspect
-                            </button>
-                          </td>
-                        </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {inspectingOrder && (
-              <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-6">
-                  <div className="flex justify-between items-baseline border-b border-primary/5 pb-3">
-                    <h2 className="font-serif text-lg font-bold text-primary">
-                      Order Details: <span className="font-mono text-accent">{inspectingOrder.id}</span>
-                    </h2>
-                    <button onClick={() => setInspectingOrder(null)} className="text-xs text-primary/45 font-bold hover:text-primary">Close</button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-bold text-xs uppercase tracking-wider text-primary/60">Confectioneries</h3>
-                      <div className="space-y-2">
-                        {inspectingOrder.cartItems.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between text-xs border-b border-primary/5 pb-2">
-                            <div>
-                              <span className="font-semibold">{item.name}</span>
-                              <span className="block text-[10px] text-primary/45">{item.flavor} &bull; {item.size} &bull; Qty {item.quantity}</span>
-                            </div>
-                            <span className="font-bold">₹{item.price * item.quantity}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="space-y-2 pt-2">
-                        <h3 className="font-bold text-xs uppercase tracking-wider text-primary/60">Receipt Screenshot</h3>
-                        {inspectingOrder.paymentScreenshot ? (
-                          <div className="relative aspect-video rounded-xl overflow-hidden border border-primary/5 bg-secondary/15">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={inspectingOrder.paymentScreenshot} alt="Payment Receipt Screenshot" className="h-full w-full object-contain" />
-                          </div>
-                        ) : (
-                          <div className="p-4 text-center border border-dashed border-primary/10 rounded-xl text-primary/45 text-xs">No screenshot uploaded.</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <h3 className="font-bold text-xs uppercase tracking-wider text-primary/60">Recipient Address</h3>
-                        <div className="bg-secondary/15 rounded-2xl p-4 border border-primary/5 text-xs space-y-1.5">
-                          <div>Name: <span className="font-semibold">{inspectingOrder.billingInfo.name}</span></div>
-                          <div>Phone: <span className="font-semibold">{inspectingOrder.billingInfo.phone}</span></div>
-                          <div>Address: <span className="font-semibold">{inspectingOrder.billingInfo.address}, {inspectingOrder.billingInfo.zip}</span></div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 bg-secondary/10 p-5 rounded-2xl border border-primary/5 text-xs">
-                        <h4 className="font-bold uppercase tracking-wider text-primary/60 border-b border-primary/5 pb-2">Admin Actions</h4>
-                        
-                        {inspectingOrder.paymentStatus !== "Verified" ? (
-                          <button
-                            onClick={() => handleVerifyOrderPayment(inspectingOrder.id)}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-full flex items-center justify-center gap-1 transition-all cursor-pointer"
-                          >
-                            <ShieldCheck size={14} /> Approve Payment Clearances
-                          </button>
-                        ) : (
-                          <div className="text-emerald-700 font-bold flex items-center gap-1.5 py-1.5">
-                            <CheckCircle2 size={16} /> Payment Verified & Cleared!
-                          </div>
-                        )}
-
-                        <div className="space-y-1.5 pt-2">
-                           <label className="font-bold uppercase text-[10px] text-primary/50">Update Delivery Step</label>
-                           <div className="grid grid-cols-2 gap-1.5">
-                             {["Placed", "Paid", "Confirmed", "Preparing", "Out for Delivery", "Delivered"].map((step) => (
-                               <button
-                                 key={step}
-                                 onClick={() => handleUpdateDeliveryStep(inspectingOrder.id, step)}
-                                 className={cn(
-                                   "py-2 rounded-full font-bold transition-all cursor-pointer text-[10px]",
-                                   inspectingOrder.deliveryStatus === step
-                                     ? "bg-accent text-white shadow-md"
-                                     : "bg-white border border-primary/10 text-primary hover:border-accent"
-                                 )}
-                               >
-                                 {step === "Out for Delivery" ? "🛵 Out for Delivery" : step === "Delivered" ? "✅ Delivered" : step}
-                               </button>
-                             ))}
-                           </div>
-                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 7. Customers database list */}
-        {activeTab === "Customers base" && (
-          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Email</th>
-                    <th className="pb-3">Phone</th>
-                    <th className="pb-3">Address</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.reduce((acc: any[], order) => {
-                    if (!acc.some((c) => c.email === order.userEmail)) {
-                      acc.push({ name: order.userName, email: order.userEmail, phone: order.billingInfo.phone, address: order.billingInfo.address });
-                    }
-                    return acc;
-                  }, []).map((cust: any, idx: number) => (
-                    <tr key={idx} className="border-b border-primary/5 last:border-b-0 hover:bg-secondary/10">
-                      <td className="py-4 font-semibold text-primary">{cust.name}</td>
-                      <td className="py-4 text-primary/60">{cust.email}</td>
-                      <td className="py-4 font-mono">{cust.phone}</td>
-                      <td className="py-4 text-primary/60">{cust.address}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* 8. Reviews dashboard tab */}
-        {activeTab === "Reviews base" && (
-          <AdminReviewsTab fetchAllData={fetchAllData} />
-        )}
-
-        {/* 9. Coupons workspace list */}
-        {activeTab === "Coupons list" && (
-          <div className="space-y-6">
-            <div className="flex justify-end">
               <button
                 onClick={() => openCouponForm()}
                 className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-primary/95 flex items-center gap-1 shadow-md cursor-pointer"
@@ -1479,8 +1050,8 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2">
-                      <button type="button" onClick={() => setCouponFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary">Cancel</button>
-                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95">Save Coupon</button>
+                      <button type="button" onClick={() => setCouponFormOpen(false)} className="rounded-full border border-primary/15 bg-transparent px-5 py-2 font-bold hover:bg-secondary cursor-pointer">Cancel</button>
+                      <button type="submit" className="rounded-full bg-primary text-white px-5 py-2 font-bold hover:bg-primary/95 cursor-pointer">Save Coupon</button>
                     </div>
                   </form>
                 </div>
@@ -1493,7 +1064,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr className="border-b border-primary/10 text-primary/45 uppercase font-bold">
                       <th className="pb-3">Coupon Code</th>
-                      <th className="pb-3">Discount Percentage</th>
+                      <th className="pb-3">Discount</th>
                       <th className="pb-3">Status</th>
                       <th className="pb-3 text-right">Actions</th>
                     </tr>
@@ -1509,13 +1080,13 @@ export default function AdminDashboard() {
                         <td className="py-4 text-right space-x-1">
                           <button
                             onClick={() => openCouponForm(c)}
-                            className="p-1.5 text-primary/50 hover:text-accent transition-colors"
+                            className="p-1.5 text-primary/50 hover:text-accent transition-colors cursor-pointer"
                           >
                             <Edit size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteCoupon(c.code)}
-                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors"
+                            className="p-1.5 text-primary/50 hover:text-destructive transition-colors cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -1529,13 +1100,13 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 10. Delivery Zones CRUD */}
+        {/* 6. Delivery Zones Table */}
         {activeTab === "Delivery Zones" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-serif text-lg font-bold text-primary">Delivery Zones</h3>
-                <p className="text-xs text-primary/50 mt-1">Add pincodes and delivery fees. Customers entering a pincode at checkout will be auto-charged the correct delivery fee.</p>
+                <h3 className="font-serif text-lg font-bold text-primary">Delivery Zones Table</h3>
+                <p className="text-xs text-primary/50 mt-1">Configure delivery pincodes and delivery fees for customers.</p>
               </div>
               <button
                 onClick={() => {
@@ -1586,14 +1157,12 @@ export default function AdminDashboard() {
                       <textarea required value={zonePincodes} onChange={(e) => setZonePincodes(e.target.value)}
                         rows={3} placeholder="400079, 400083, 400601"
                         className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-2.5 text-primary resize-none" />
-                      <p className="text-[10px] text-primary/40">Separate each pincode with a comma</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="font-bold text-primary/60 uppercase">Delivery Fee (₹)</label>
                         <input type="number" min={0} required value={zoneFee} onChange={(e) => setZoneFee(Number(e.target.value))}
                           className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
-                        <p className="text-[10px] text-primary/40">Use 0 for free delivery</p>
                       </div>
                       <div className="space-y-1">
                         <label className="font-bold text-primary/60 uppercase">Est. Duration</label>
@@ -1617,7 +1186,7 @@ export default function AdminDashboard() {
             {/* Zones Table */}
             <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm overflow-x-auto">
               {deliveryZones.length === 0 ? (
-                <p className="text-xs text-primary/40 py-8 text-center">No delivery zones configured yet. Add your first zone above.</p>
+                <p className="text-xs text-primary/40 py-8 text-center">No delivery zones configured yet.</p>
               ) : (
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
@@ -1691,17 +1260,19 @@ export default function AdminDashboard() {
           </div>
         )}
 
-
-        {/* 11. Payment Settings tab */}
-        {activeTab === "Payment Settings" && (
+        {/* 7. Bank IFSC Details */}
+        {activeTab === "Bank IFSC Details" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">UPI Merchant Bank details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs max-w-2xl">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-primary">Bank IFSC & Merchant Payment Details</h3>
+              <p className="text-xs text-primary/50 mt-1">Manage bank account details, IFSC code, and merchant QR code image for manual UPI transfers.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs max-w-2xl pt-2 border-t border-primary/5">
               <div className="space-y-1">
                 <label className="font-bold text-primary/60 uppercase">Bank Name</label>
                 <input
                   type="text"
-                  value={settings.bankName}
+                  value={settings.bankName || ""}
                   onChange={(e) => setSettings({ ...settings, bankName: e.target.value })}
                   className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
                 />
@@ -1710,7 +1281,7 @@ export default function AdminDashboard() {
                 <label className="font-bold text-primary/60 uppercase">Account Name</label>
                 <input
                   type="text"
-                  value={settings.accountName}
+                  value={settings.accountName || ""}
                   onChange={(e) => setSettings({ ...settings, accountName: e.target.value })}
                   className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
                 />
@@ -1719,18 +1290,18 @@ export default function AdminDashboard() {
                 <label className="font-bold text-primary/60 uppercase">Account Number</label>
                 <input
                   type="text"
-                  value={settings.accountNumber}
+                  value={settings.accountNumber || ""}
                   onChange={(e) => setSettings({ ...settings, accountNumber: e.target.value })}
-                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary font-mono"
                 />
               </div>
               <div className="space-y-1">
                 <label className="font-bold text-primary/60 uppercase">IFSC Routing Code</label>
                 <input
                   type="text"
-                  value={settings.routingNumber}
-                  onChange={(e) => setSettings({ ...settings, routingNumber: e.target.value })}
-                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                  value={settings.ifscCode || ""}
+                  onChange={(e) => setSettings({ ...settings, ifscCode: e.target.value })}
+                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary font-mono"
                 />
               </div>
 
@@ -1738,7 +1309,7 @@ export default function AdminDashboard() {
                 <label className="font-bold text-primary/60 uppercase">Upload Merchant UPI QR Code Image</label>
                 <div className="relative border border-primary/10 rounded-full bg-background px-4 py-2.5 flex items-center justify-between">
                   <span className="text-[10px] text-primary/50 truncate max-w-[400px]">
-                    {settings.qrImageUrl ? "QR image loaded (base64)" : "Select merchant QR file..."}
+                    {settings.qrImageUrl ? "QR image loaded" : "Select merchant QR file..."}
                   </span>
                   <input
                     type="file"
@@ -1768,93 +1339,60 @@ export default function AdminDashboard() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(settings)
                 });
-                if (res.ok) alert("Payment settings saved persistently!");
+                if (res.ok) alert("Bank details and IFSC saved successfully!");
               }}
-              className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 text-xs block"
+              className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 text-xs block cursor-pointer shadow-md"
             >
-              Save Bank details
+              Save Bank Details
             </button>
           </div>
         )}
 
-        {/* 12. WhatsApp Settings */}
-        {activeTab === "WhatsApp Rules" && (
+        {/* 8. WhatsApp Messaging */}
+        {activeTab === "WhatsApp Messaging" && (
           <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">WhatsApp Hook configuration</h3>
-            <div className="text-xs space-y-4 max-w-md">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-primary">WhatsApp Messaging Configuration</h3>
+              <p className="text-xs text-primary/50 mt-1">Set support phone number and pre-filled inquiry message for custom cake orders.</p>
+            </div>
+            <form onSubmit={handleWhatsAppSubmit} className="text-xs space-y-4 max-w-md pt-2 border-t border-primary/5">
               <div className="space-y-1">
-                <label className="font-bold text-primary/60 uppercase">WhatsApp Support Number</label>
+                <label className="font-bold text-primary/60 uppercase">WhatsApp Support Phone Number</label>
                 <input
                   type="text"
-                  value={settings.whatsappNumber}
+                  required
+                  value={settings.whatsappNumber || ""}
                   onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                  placeholder="+918424016876"
                   className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-bold text-primary/60 uppercase">Pre-filled Message text</label>
-                <input
-                  type="text"
-                  value={settings.whatsappDefaultMessage}
+                <label className="font-bold text-primary/60 uppercase">Pre-filled Order Message</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={settings.whatsappDefaultMessage || ""}
                   onChange={(e) => setSettings({ ...settings, whatsappDefaultMessage: e.target.value })}
-                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
+                  className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-2.5 text-primary"
                 />
               </div>
               <button
-                onClick={async () => {
-                  const res = await fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(settings)
-                  });
-                  if (res.ok) alert("WhatsApp configurations saved persistently!");
-                }}
-                className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95"
+                type="submit"
+                className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 cursor-pointer shadow-md"
               >
                 Save WhatsApp Details
               </button>
-            </div>
+            </form>
           </div>
         )}
 
-        {/* 13. Website config settings */}
-        {activeTab === "Website config" && (
-          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Metadata settings</h3>
-            <div className="text-xs space-y-4 max-w-md">
-              <div className="space-y-1">
-                <label className="font-bold text-primary/60 uppercase">Brand/Store Name</label>
-                <input
-                  type="text"
-                  value={settings.websiteName}
-                  onChange={(e) => setSettings({ ...settings, websiteName: e.target.value })}
-                  className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary"
-                />
-              </div>
-              <button
-                onClick={async () => {
-                  const res = await fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(settings)
-                  });
-                  if (res.ok) alert("Website name updated persistently!");
-                }}
-                className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95"
-              >
-                Save Configs
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 14. AI Chatbot knowledge rule settings */}
-        {activeTab === "AI Chatbot rules" && (
+        {/* 9. Chatbot Rules */}
+        {activeTab === "Chatbot Rules" && (
           <div className="space-y-8">
-            {/* Groq Credentials & Context Textarea */}
             <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
               <h3 className="font-serif text-lg font-bold text-primary pb-3 border-b border-primary/5">
-                Groq LLM Chatbot settings
+                Groq LLM Chatbot Settings
               </h3>
               <div className="space-y-4 text-xs max-w-2xl">
                 <div className="space-y-1">
@@ -1868,9 +1406,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="font-bold text-primary/60 uppercase">Shop Context Description (for AI Analysis)</label>
+                  <label className="font-bold text-primary/60 uppercase">Shop Context Description (for AI Assistant)</label>
                   <textarea
-                    rows={6}
+                    rows={4}
                     placeholder="Enter detailed facts about the shop (location, delivery fee, menu, timings, rules)..."
                     value={settings.aiShopContext || ""}
                     onChange={(e) => setSettings({ ...settings, aiShopContext: e.target.value })}
@@ -1885,9 +1423,9 @@ export default function AdminDashboard() {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify(settings)
                     });
-                    if (res.ok) alert("Groq API parameters updated persistently!");
+                    if (res.ok) alert("Groq API parameters saved successfully!");
                   }}
-                  className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 transition-all cursor-pointer"
+                  className="rounded-full bg-primary text-white px-6 py-2.5 font-bold hover:bg-primary/95 cursor-pointer shadow-md"
                 >
                   Save Groq Config
                 </button>
@@ -1896,34 +1434,34 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1 bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
-                <h3 className="font-serif text-base font-bold text-primary">Add Local Answer Rule (Fallback)</h3>
+                <h3 className="font-serif text-base font-bold text-primary">Add Chatbot Answer Rule</h3>
                 <form onSubmit={handleAddAiRule} className="space-y-4 text-xs">
                   <div className="space-y-1">
-                    <label className="font-bold text-primary/60 uppercase">Triggers / Keywords (csv)</label>
+                    <label className="font-bold text-primary/60 uppercase">Keywords (comma-separated)</label>
                     <input type="text" required value={aiKeyword} onChange={(e) => setAiKeyword(e.target.value)} placeholder="E.g., eggless, vegan" className="w-full rounded-full border border-primary/10 bg-background px-4 py-2.5 text-primary" />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-primary/60 uppercase">Automated Answer Response</label>
+                    <label className="font-bold text-primary/60 uppercase">Automated Answer</label>
                     <textarea required rows={4} value={aiResponse} onChange={(e) => setAiResponse(e.target.value)} placeholder="E.g., Yes! We support vegan cakes..." className="w-full rounded-2xl border border-primary/10 bg-background px-4 py-3 text-primary" />
                   </div>
-                  <button type="submit" className="w-full rounded-full bg-primary text-white py-2.5 font-bold hover:bg-primary/95">Save Rule</button>
+                  <button type="submit" className="w-full rounded-full bg-primary text-white py-2.5 font-bold hover:bg-primary/95 cursor-pointer">Save Rule</button>
                 </form>
               </div>
 
               <div className="lg:col-span-2 bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
-                <h3 className="font-serif text-base font-bold text-primary">Current Local Fallback Rules</h3>
+                <h3 className="font-serif text-base font-bold text-primary">Current Chatbot Fallback Rules</h3>
                 <div className="space-y-3">
                   {(settings.aiRules || []).map((rule: any, idx: number) => (
                     <div key={idx} className="bg-secondary/15 border border-primary/5 p-4 rounded-2xl text-xs space-y-2 relative">
                       <button
                         onClick={() => handleDeleteAiRule(idx)}
-                        className="absolute right-3 top-3 text-primary/35 hover:text-destructive transition-colors"
+                        className="absolute right-3 top-3 text-primary/35 hover:text-destructive transition-colors cursor-pointer"
                         title="Delete rule"
                       >
                         <Trash2 size={14} />
                       </button>
                       <div>
-                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Keywords triggers</span>
+                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Keywords</span>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {rule.keywords.map((k: string) => (
                             <span key={k} className="bg-white border border-primary/5 px-2 py-0.5 rounded-md font-mono text-[9px] text-accent font-bold">{k}</span>
@@ -1931,7 +1469,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div>
-                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Answer response</span>
+                        <span className="font-bold text-primary/45 uppercase text-[9px] block">Response</span>
                         <p className="text-primary/80 mt-1 leading-relaxed">{rule.response}</p>
                       </div>
                     </div>
@@ -1941,123 +1479,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-
-        {/* 15. Analytics dashboard graphs */}
-        {activeTab === "Analytics view" && (
-          <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-serif text-base font-bold text-primary pb-4 border-b border-primary/5">Order Velocity Chart</h3>
-            <div className="aspect-[2/1] w-full max-w-2xl bg-secondary/15 rounded-3xl border border-primary/5 flex flex-col justify-end p-6 relative">
-              <div className="absolute inset-0 flex items-center justify-center text-primary/30 text-xs font-bold gap-1">
-                <TrendingUp size={16} /> Sales & Order volumes have risen by 15% this week
-              </div>
-              <div className="w-full flex justify-between items-end h-40 gap-4 relative z-10 pt-10">
-                <div className="w-full bg-accent rounded-t-lg h-[20%]" />
-                <div className="w-full bg-accent rounded-t-lg h-[45%]" />
-                <div className="w-full bg-accent rounded-t-lg h-[30%]" />
-                <div className="w-full bg-accent rounded-t-lg h-[75%]" />
-                <div className="w-full bg-primary rounded-t-lg h-[95%]" />
-              </div>
-              <div className="flex justify-between text-[10px] font-bold text-primary/45 mt-4">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );
 }
-
-function AdminReviewsTab({ fetchAllData }: { fetchAllData: () => void }) {
-  const [allReviews, setAllReviews] = useState<any[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/reviews")
-      .then((r) => r.json())
-      .then((d) => {
-        setAllReviews(d.reviews || []);
-        setLoadingReviews(false);
-      })
-      .catch(() => setLoadingReviews(false));
-  }, []);
-
-  const handleClearAll = async () => {
-    if (!confirm("Are you sure you want to permanently delete ALL customer reviews? This cannot be undone.")) return;
-    try {
-      const res = await fetch("/api/reviews", { method: "DELETE" });
-      if (res.ok) {
-        setAllReviews([]);
-        alert("All reviews cleared successfully.");
-        fetchAllData();
-      }
-    } catch (e) {}
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="font-serif text-lg font-bold text-primary">Customer Reviews</h3>
-          <p className="text-xs text-primary/50 mt-1">All submitted customer feedback from delivered orders.</p>
-        </div>
-        <button
-          onClick={handleClearAll}
-          className="flex items-center gap-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 text-xs font-bold shadow-md cursor-pointer transition-all"
-        >
-          <Trash2 size={14} /> Clear All Reviews
-        </button>
-      </div>
-
-      {loadingReviews ? (
-        <div className="text-xs text-primary/40 text-center py-8">Loading reviews...</div>
-      ) : allReviews.length === 0 ? (
-        <div className="bg-white border border-primary/5 rounded-3xl p-10 text-center shadow-sm">
-          <p className="text-xs text-primary/40">No reviews submitted yet.</p>
-        </div>
-      ) : (
-        <div className="bg-white border border-primary/5 rounded-3xl p-6 shadow-sm space-y-4">
-          {allReviews.map((rv: any) => (
-            <div key={rv.id} className="border-b border-primary/5 pb-4 last:border-b-0">
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex text-amber-400">
-                      {Array.from({ length: rv.rating }).map((_: any, i: number) => (
-                        <Star key={i} size={11} className="fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-[10px] font-bold text-primary">{rv.userName}</span>
-                    <span className="text-[10px] text-primary/40">{new Date(rv.date).toLocaleDateString("en-IN")}</span>
-                  </div>
-                  <p className="text-xs text-primary/70 italic">&ldquo;{rv.review}&rdquo;</p>
-                  <p className="text-[10px] text-primary/40">Product: {rv.productId}</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    const updated = allReviews.filter((r: any) => r.id !== rv.id);
-                    await fetch("/api/reviews", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ _overwrite: updated }),
-                    });
-                    setAllReviews(updated);
-                  }}
-                  className="p-1.5 text-primary/30 hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
-                  title="Remove this review"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
